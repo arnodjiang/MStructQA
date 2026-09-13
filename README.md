@@ -1,14 +1,25 @@
 # MStructQA
 
-**MStructQA: A Multilingual Benchmark for Chart and Visual Tabular Question Answering in MLLMs**
+**A Multilingual Benchmark for Chart and Visual Tabular Question Answering in MLLMs**
 
-> **Work In Progress** — Code and prompts for a research construction pipeline. The paper title, dataset composition and evaluation protocol are provisional. The 24-language dataset is under construction and review; no finalized dataset or model leaderboard is released here.
+[Getting Started](#getting-started) · [Benchmark](#benchmark) · [Pipeline](#construction-pipeline) · [Prompts](prompts/README.md) · [Documentation](#documentation)
 
-MStructQA studies how multimodal large language models (MLLMs) understand charts and visual tables across languages. It constructs controlled language variants of the same source question and numerical/structural content, supporting same-language QA and Chinese/English questions about visuals in other languages.
+MStructQA provides a **24-language** benchmark construction framework for evaluating how multimodal large language models understand charts and visual tables. It pairs localized visuals with questions and reference answers while preserving the underlying numerical data, table structure and question intent.
 
-## Benchmark overview
+The project supports same-language visual question answering and cross-language evaluation with Chinese or English questions. This repository includes the generation pipeline, English prompts, rendering tools, quality checks and reproducible export utilities.
 
-### 24 languages
+## Highlights
+
+- **24 languages:** parallel localized charts, tables, questions and answers.
+- **Three evaluation settings:** same-language QA, Chinese cross-language QA and English cross-language QA.
+- **Linked visual and textual references:** protected label keys connect questions to the labels used for rendering.
+- **Reproducible visual construction:** frozen specifications, standalone Python renderers, source provenance and artifact hashes.
+- **Explicit quality checks:** numerical consistency, typography, layout, source fidelity and translation review.
+- **Resumable execution:** request caching, recorded attempts and bounded transport retries.
+
+## Benchmark
+
+### Languages
 
 | Code | Language | Code | Language | Code | Language |
 | --- | --- | --- | --- | --- | --- |
@@ -21,28 +32,21 @@ MStructQA studies how multimodal large language models (MLLMs) understand charts
 | sw | Swahili | fa | Persian | ur | Urdu |
 | bn | Bengali | ta | Tamil | te | Telugu |
 
-The initial eleven-language version uses en, zh, ja, ko, fr, de, es, pt, ru, ar and hi. The expansion adds the remaining thirteen. A multilingual visual means parallel localized versions of a chart/table, not a requirement to mix all languages in one image.
+Each source visual is localized into separate language versions. Numerical content and structural relationships remain aligned across versions; a single image is not required to contain multiple languages.
 
 ### Evaluation settings
 
-| Setting | Visual language | Query / answer language | Configurations per base QA |
-| --- | --- | --- | ---: |
-| Same-language | Each language | Same as visual | 24 |
-| Chinese cross-language | Each language except Chinese | Chinese | 23 |
-| English cross-language | Each language except English | English | 23 |
+| Setting | Visual language | Query language | Answer language |
+| --- | --- | --- | --- |
+| Same-language QA | Any supported language | Same as visual | Same as query |
+| Chinese cross-language QA | Any supported language except Chinese | Chinese | Chinese |
+| English cross-language QA | Any supported language except English | English | English |
 
-For **L** languages including Chinese and English, each base QA has **3L − 2** unique configurations. Chinese–Chinese and English–English cases are counted once. Other all-to-all query pairs and independent answer-language permutations are outside the current design.
+For each base question, the distinct language configurations are `(v, q, q)`, where `v` is the visual language and `q` belongs to `{v, zh, en}`. Chinese–Chinese and English–English configurations are included only once. Other all-to-all language pairs and independently selected answer languages are outside this protocol.
 
-| Construction scale | Initial 11 languages | Expanded 24 languages |
-| --- | ---: | ---: |
-| Base QA in the current development selection | 128 | 128 |
-| Per-case visual-language artifacts | 1,408 | 3,072 |
-| Configurations per base QA | 31 | 70 |
-| Candidate QA configurations | 3,968 | 8,960 |
+Language variants share their base identity and source provenance. They must remain grouped across evaluation splits rather than being treated as independent source questions.
 
-**These are construction targets, not accepted-example counts.** The final paper-scale dataset size is not fixed by this development selection. Language variants are dependent observations of the same base QA; source figures/tables/documents must stay grouped across splits. Visual artifacts can be deduplicated when multiple questions share a source visual.
-
-### Upstream sources
+### Source datasets
 
 | Source | Collected split/configuration |
 | --- | --- |
@@ -53,22 +57,24 @@ For **L** languages including Chinese and English, each base QA has **3L − 2**
 | [ChartQA](https://huggingface.co/datasets/HuggingFaceM4/ChartQA) | test |
 | [MMTU](https://huggingface.co/datasets/MMTU-benchmark/MMTU) | upstream train split |
 
-Collection does not imply admission to a held-out test set. Multiple questions per row, contextual turns and nonvisual table tasks require explicit selection and conversion. [Pinned public revisions and file hashes](configs/upstream_manifest.json) support local download. Dataset files are not redistributed in this code repository.
+Public revisions and file hashes are recorded in [the upstream manifest](configs/upstream_manifest.json). Collection scope is separate from evaluation eligibility: multi-turn records, multiple questions per row and nonvisual table tasks require explicit selection or conversion.
 
 ## Construction pipeline
 
-1. **Collect and freeze:** download pinned sources, verify hashes, select candidates and assign stable identities/provenance.
-2. **Recover a visual specification:** prefer structured table cells; otherwise ask the configured multimodal API for chart reconstruction or table transcription. Never use the reference answer as a reconstruction fitting target.
-3. **Link QA to labels:** normalize the supplied reference without solving the question; protected `[[label_key]]` references connect question templates and visible labels.
-4. **Localize through the API:** translate labels and linked QA together with English prompts and native-language fluency constraints. Preserve numbers, units, comparison, negation, approximation and temporal scope.
-5. **Render deterministically:** render the frozen data and translated labels in Python. Tables share a layout measured across all languages; complex scripts use shaping, bidirectional layout and covering fonts.
-6. **Review and export:** check geometry, glyphs, references, numerical consistency, source fidelity and translation meaning. Export candidate/screened JSONL, PNGs, standalone rendering code, audit records and a gallery.
+1. **Collect and select.** Download pinned sources, verify file hashes and assign stable identities and provenance to selected examples.
+2. **Recover visual structure.** Prefer structured table cells when available. Otherwise use the configured multimodal API to reconstruct a chart specification or transcribe a visual table, without using reference answers as fitting targets.
+3. **Link questions and labels.** Normalize the supplied QA without solving it. Protected `[[label_key]]` references connect question templates with visible labels.
+4. **Localize.** Translate labels and linked QA through the API using English prompts and language-specific fluency rules. Preserve quantities, units, comparisons, negation, approximation and temporal scope.
+5. **Render.** Generate images deterministically from frozen data and translated labels. Tables use a common layout measured across languages; text rendering supports shaping, bidirectional layout and font fallback.
+6. **Review and export.** Validate numerical consistency, label references, glyph coverage, layout, source fidelity and translation meaning. Export candidate and screened QA, images, standalone code and review records.
 
-The API handles semantic recovery, translation, query editing and review. Local code handles deterministic rendering, validation, caching and export. Exported plotting scripts are **reconstructed code**, not the upstream authors' original plotting source. Successful translation cannot override a failed source audit.
+The API handles semantic reconstruction, translation, query editing and review. Local code handles deterministic rendering, validation, caching and export. Generated plotting scripts are reconstructed renderers, not the upstream authors' original plotting source.
 
-## Quick start
+## Getting started
 
-Use Python 3.11+ for a fresh environment, `curl`, and Unicode fonts covering your scripts. The renderer was developed on macOS; read the [platform/font notes](docs/SETUP.md) for other environments.
+### Installation
+
+Use Python 3.11+, `curl` and fonts covering the requested scripts. See [platform and font configuration](docs/SETUP.md) for rendering requirements.
 
 ```bash
 git clone https://github.com/arnodjiang/MStructQA.git
@@ -77,11 +83,11 @@ python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install -r requirements.txt
 cp .env.example .env
-# Edit .env locally: API key, base URL and a supported model.
-python scripts/run_pipeline.py --help
 ```
 
-The provider must support an OpenAI-compatible **Responses API**, image input and sufficient context/output length. A configured model name does not establish provider support. `.env`, local data and logs are excluded from Git.
+Set `OPENAI_API_KEY`, `OPENAI_BASE_URL` and `OPENAI_MODEL` in your local `.env`. The provider must support an OpenAI-compatible **Responses API**, image input and sufficient context/output length. `.env`, generated data and API logs are excluded from Git.
+
+### Run the pipeline
 
 ```bash
 python scripts/run_pipeline.py download
@@ -93,27 +99,58 @@ python scripts/run_pipeline.py expand-audit
 python scripts/run_pipeline.py finalize
 ```
 
-API stages consume provider quota and can take substantial time. Default outputs: `data/visual_benchmark/baseline_11/` and `data/visual_benchmark/mstructqa_24/`. Use `--baseline` / `--output` to select other directories. Fresh model calls are not guaranteed to reproduce an earlier research run exactly; retain cached specifications and rendering snapshots for exact reproduction.
+`baseline` and `expand` are internal construction stages of the 24-language pipeline. Use `--baseline` and `--output` to configure directories, and `--help` to inspect available options. The final output defaults to `data/visual_benchmark/mstructqa_24/`.
 
-Inspect failures before resuming with `--retry-failed`. Connection/timeout errors, HTTP 429 and HTTP 5xx receive up to **10 retries**, **5 seconds** apart, after the initial attempt. Exhaustion records the failure and lets the batch process the next item. Malformed/incomplete content and authentication failures are not automatically retried. Attempts are retained locally, without a global connection-error circuit breaker.
+Successful API results are cached. After inspecting a failure, use `--retry-failed` to resume. Connection/timeout failures, HTTP 429 and HTTP 5xx receive up to ten retries, five seconds apart, after the initial request. Exhausted requests are recorded and skipped so the batch can process subsequent items. Malformed content and authentication errors are not automatically retried.
 
-An API-free synthetic example and stage/output details are in [Setup](docs/SETUP.md).
+### Try an API-free example
 
-## Code, prompts and documentation
+```bash
+python skills/multilingual-visual-benchmark/scripts/visual_harness.py run \
+  --spec skills/multilingual-visual-benchmark/examples/table.json \
+  --translations skills/multilingual-visual-benchmark/examples/table_locales.json \
+  --languages en,zh,ar --output data/demo
+```
 
-- [Prompt catalog](prompts/README.md): English recovery, QA, translation, per-language copyediting and review prompts.
-- [Design](docs/DESIGN.md): research questions, preservation rules, quality gates and evaluation limits.
-- [Dataset card](docs/DATASET_CARD.md): sources, scope, status and limitations.
-- [`scripts/run_pipeline.py`](scripts/run_pipeline.py): public staged entry point.
-- [`scripts/final_benchmark/`](scripts/final_benchmark/): construction, expansion, auditing, rendering, export and scoring.
-- [`skills/multilingual-visual-benchmark/`](skills/multilingual-visual-benchmark/): reusable harness, adapter contract and synthetic examples.
+This uses synthetic data and checked-in translations. Add `--font /absolute/path/to/font.ttf` when needed. The generated run includes a local HTML gallery.
 
-Some research paths and environment variables retain the earlier internal name `MVisQA` for compatibility. The public project name is **MStructQA**.
+## Outputs and quality
 
-## Status and licensing
+| Output | Contents |
+| --- | --- |
+| `benchmark.jsonl` | Candidate QA configurations with provenance and review state |
+| `validation_release/val.jsonl` | Examples satisfying the configured automated admission checks |
+| `validation_release/val.needs_review.jsonl` | Examples requiring additional review |
+| `cases/<id>/images/` | Localized images and layout reports |
+| `cases/<id>/code/` | Standalone rendering code with embedded data and labels |
+| `reproducible_code.zip` | Packaged renderers and reproduction metadata |
+| `index.html` | Local visual inspection gallery |
 
-**Work In Progress.** No acceptance, benchmark scores, final test-set size or human certification is claimed. Automated review can use the same model as generation; it is not independent human validation. Source recovery, translation, readability, dataset overlap and scoring remain research risks.
+The repository distributes code, prompts and synthetic examples; source and generated benchmark data are obtained through the pipeline. Actual run statistics and completion are recorded in the output manifests.
 
-Local runs expose `status.json`, `expansion_audit/progress.json` and, after finalization, `completion.json`. Candidate and screened outputs remain separate.
+Source fidelity and localization quality are assessed separately. A successful translation does not override a failed source audit. Automated reviewers can use the same model as generation and do not constitute human certification. Exact reproduction requires the saved specifications, labels, code and fonts; new model calls can produce different results.
 
-See [CONTRIBUTING.md](CONTRIBUTING.md). Code is MIT-licensed, with the bundled harness's existing notice retained. Upstream datasets, derived records, fonts and provider terms are separate. This repository grants no redistribution rights over those assets.
+## Documentation
+
+- [Setup and execution](docs/SETUP.md)
+- [Benchmark design and evaluation](docs/DESIGN.md)
+- [Dataset card](docs/DATASET_CARD.md)
+- [English prompt catalog](prompts/README.md)
+- [Rendering adapter contract](skills/multilingual-visual-benchmark/references/contract.md)
+- [Contributing](CONTRIBUTING.md)
+
+The implementation is organized under `scripts/final_benchmark/`, with reusable rendering tools and synthetic examples under `skills/multilingual-visual-benchmark/`. Some internal paths retain the identifier `MVisQA` for compatibility.
+
+## Testing
+
+```bash
+python -m unittest discover -s tests -v
+python -m unittest scripts.final_benchmark.test_contract -v
+python -m unittest discover -s skills/multilingual-visual-benchmark/tests -v
+```
+
+Portable contracts run in CI without API credentials. Rendering tests additionally require suitable fonts.
+
+## License
+
+Code is available under the [MIT License](LICENSE). The bundled harness retains its existing license notice. Upstream datasets, derived records, fonts and API provider terms are separate; the code license does not grant redistribution rights over those assets.

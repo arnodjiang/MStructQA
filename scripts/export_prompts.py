@@ -24,7 +24,7 @@ def main():
         p=dest/name;p.parent.mkdir(parents=True,exist_ok=True);p.write_text(text)
         index[name]={'sha256':hashlib.sha256(text.encode()).hexdigest()}
     (dest/'manifest.json').write_text(json.dumps(index,indent=2)+'\n')
-    (ROOT/'configs/languages.json').write_text(json.dumps({'status':'Work In Progress','languages':languages,
+    (ROOT/'configs/languages.json').write_text(json.dumps({'languages':languages,
         'cross_language_query_languages':['zh','en'],'answer_policy':'same as query','configurations_per_base_qa':3*len(languages)-2},indent=2)+'\n')
     print('Exported',len(entries),'prompt snapshots for',len(languages),'languages.')
 

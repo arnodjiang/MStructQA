@@ -9,9 +9,9 @@ ROOT=Path(__file__).resolve().parents[1]
 
 
 def main():
-    p=argparse.ArgumentParser(description='MStructQA — Work In Progress')
+    p=argparse.ArgumentParser(description='MStructQA: 24-language chart and visual table QA pipeline')
     p.add_argument('stage',choices=['download','prepare','baseline','baseline-audit','expand','expand-audit','finalize'])
-    p.add_argument('--baseline',type=Path,default=ROOT/'data/visual_benchmark/baseline_11')
+    p.add_argument('--baseline',type=Path,default=ROOT/'data/visual_benchmark/baseline')
     p.add_argument('--output',type=Path,default=ROOT/'data/visual_benchmark/mstructqa_24')
     p.add_argument('--workers',type=int,default=4)
     p.add_argument('--retry-failed',action='store_true',help='Explicitly resume previously failed requests after inspection')

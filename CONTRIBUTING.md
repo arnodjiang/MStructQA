@@ -1,4 +1,4 @@
-# Contributing — Work In Progress
+# Contributing
 
 Please describe the concrete issue, proposed behavior and validation in your pull request. Useful contributions include source-preserving reconstruction, language-specific fluency review, complex-script rendering, admission checks and evaluation methods.
 

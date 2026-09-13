@@ -1,4 +1,4 @@
-# English prompt catalog — Work In Progress
+# English prompt catalog
 
 These files are readable snapshots of the executable Python prompt definitions. Regenerate with `python scripts/export_prompts.py`; `manifest.json` records snapshot hashes. Full live requests, payloads and attempt records remain local under the run output's `api/` directory and are not committed.
 
@@ -12,8 +12,8 @@ These files are readable snapshots of the executable Python prompt definitions. 
 | `query_copyedit.txt`, `query/<code>.txt` | Minimal, answer-blind editing with language-specific fluency rules for all 24 languages |
 | `query_equivalence_review.txt` | Reject changes in meaning, scope or difficulty |
 | `source_review.txt` | Compare source and reconstructed English visual |
-| `baseline_multilingual_audit.txt` | Review the initial eleven-language baseline |
-| `expanded_language_audit.txt` | Inspect added-language images, translations, QA fluency and answer equivalence |
+| `baseline_multilingual_audit.txt` | Review baseline localized images and QA |
+| `expanded_language_audit.txt` | Inspect remaining localized images, translations, QA fluency and answer equivalence |
 
 Runtime calls can append target language names, language-specific rules, batch limits or evidence from a previous failed check. Those exact composed prompts and payloads are saved in the local request records. Snapshots alone are not a substitute for a run's complete provenance.
 

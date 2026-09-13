@@ -1,4 +1,4 @@
-# Design — Work In Progress
+# Design
 
 MStructQA aims to measure multilingual chart and visual-table understanding while controlling the underlying numerical/structural content. Planned analyses compare same-language QA and Chinese/English QA over localized visuals, with breakdowns by language, source, visual type and reasoning operation. These are research aims, not established findings.
 
@@ -30,4 +30,3 @@ Report candidate and screened denominators, including exclusions by source and l
 
 `score_val.py` implements a preliminary strict matching baseline with clustered uncertainty estimates. Exact match is unsuitable for some numeric approximations, unordered lists and long answers. Any normalization, tolerance or judge-based scoring must be declared and validated before evaluation. Do not invent tolerances to make reconstructed examples pass.
 
-The 128-case development selection does not fix the final benchmark size. Broader curation, deduplication/overlap checks, human localization review, scoring validation and model evaluation remain work in progress.

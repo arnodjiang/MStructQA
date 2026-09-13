@@ -35,7 +35,7 @@ def main():
     save(out/'quality_repair_plan.json',{'created_at':now(),'parent_build':str(src),'repairs':repairs,
          'held':held,'fully_admitted_cases_unchanged':retained,'mode_counts':dict(Counter(repairs.values())),
          'policy':'Never alter source question or supplied answer to obtain a pass; immutable prior build retained. All changed cases require renewed multilingual audit.'})
-    (out/'BUILD_NOTES.md').write_text('# v3 quality repair revision\n\nThis is a work-in-progress revision cloned from v2. '
+    (out/'BUILD_NOTES.md').write_text('# v3 quality repair revision\n\nThis quality-repair revision is cloned from v2. '
           'quality_repair_plan.json records eligible repairs and cases requiring replacement or adjudication. '
           'Each changed case archives its prior files in before_quality_repair/. '
           'Copied API records are historical reuse, not newly billed calls. '

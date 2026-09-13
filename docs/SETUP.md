@@ -1,4 +1,4 @@
-# Setup and execution — Work In Progress
+# Setup and execution
 
 ## Environment
 
@@ -28,11 +28,11 @@ Add `--font /absolute/path/to/covering-font.ttf` when needed. This uses checked-
 Run root `scripts/run_pipeline.py` stages in order:
 
 1. `download`: read public source pins from `configs/upstream_manifest.json`, fetch selected files, verify upstream hashes and write local metadata. This requires several GB of storage. A pre-existing local metadata file takes precedence, so preserve its provenance.
-2. `prepare`: profile the sources, choose the current 128-case development sample, extract assets and build stable identities. This is a fresh selection, not a promise to recreate all manual curation from a historical local run.
-3. `baseline`: reconstruct/transcribe, normalize QA, translate the first eleven languages, render and export candidates.
+2. `prepare`: profile the sources, apply the configured candidate selection, extract assets and build stable identities. Selection policies and cardinality checks are implemented in the selection and builder modules.
+3. `baseline`: reconstruct/transcribe, normalize QA, generate the baseline localizations, render and export candidates.
 4. `baseline-audit`: source review, code-constant verification and multilingual admission audit. Uncertain/failed candidates remain separate.
-5. `expand`: copy a baseline's frozen specification and QA into a new output and generate the thirteen added languages. If the matching local `query_polish_v1` records exist, their adopted edits are reused; otherwise the baseline queries are used.
-6. `expand-audit`: review new-language images, labels, query fluency and reference-answer equivalence in bounded batches.
+5. `expand`: copy a baseline's frozen specification and QA into a new output and complete the remaining localizations for the 24-language set. If the matching local `query_polish_v1` records exist, their adopted edits are reused; otherwise the baseline queries are used.
+6. `expand-audit`: review the remaining localized images, labels, query fluency and reference-answer equivalence in bounded batches.
 7. `finalize`: verify every exported code's constants, execute all 24 languages on representative chart/table cases, check inherited/new admission criteria, export screened JSONL and package standalone code. Requires complete generation and audit records.
 
 Pass `--baseline PATH`, `--output PATH` and `--workers N` to the entry point. For advanced targeted repairs use the underlying modules' `--help`. Do not run duplicate writers against one output directory. Watcher variants are optional local orchestration, not required for the sequential public workflow.
