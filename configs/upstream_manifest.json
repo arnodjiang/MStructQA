@@ -1,0 +1,255 @@
+{
+  "description": "Pinned public upstream revisions and file hashes; no dataset records or credentials.",
+  "repositories": {
+    "terryoo/TableVQA-Bench": {
+      "sha": "17e291af2b1cbc9340509a0412a6f1c05b0a76b5",
+      "siblings": [
+        {
+          "rfilename": "README.md",
+          "blobId": "63c1f124ab0cf92966dc633dd9a5fdd5f5910021",
+          "size": 943
+        },
+        {
+          "rfilename": "data/fintabnetqa-00000-of-00001-c337fe9eb7a70460.parquet",
+          "blobId": "cefd8bdf412337630c60f88d10afe5adf9d9453e",
+          "size": 17671399,
+          "lfs": {
+            "sha256": "919a70149e5a3e41d4222d597e35466813814dd682fb50ce0b5d2d838fb88fb7",
+            "size": 17671399,
+            "pointerSize": 133
+          }
+        },
+        {
+          "rfilename": "data/vtabfact-00000-of-00001-ecd1dbae37761ddd.parquet",
+          "blobId": "8baa792d29ce9cf0db304c7a52f0af878ac2cd17",
+          "size": 36405636,
+          "lfs": {
+            "sha256": "b83ccf4da20785373e57124cdc3258ace33720f4907de5fc44bc39626e4dee38",
+            "size": 36405636,
+            "pointerSize": 133
+          }
+        },
+        {
+          "rfilename": "data/vwtq-00000-of-00001-764eb826ab450a91.parquet",
+          "blobId": "a756d59f0f21ae72681dc16c057c27e22a68bff9",
+          "size": 64695905,
+          "lfs": {
+            "sha256": "5b3e19c9be7e06d372043d49b00d08e0e61589d8b7458a059af598e7967d263d",
+            "size": 64695905,
+            "pointerSize": 133
+          }
+        },
+        {
+          "rfilename": "data/vwtq_syn-00000-of-00001-2daaa7285aca2c1d.parquet",
+          "blobId": "d6181b04ac62c9c69398c223a7a61cd38618e413",
+          "size": 22204462,
+          "lfs": {
+            "sha256": "ad8ab092e734ad1663e1aaeadb9e6677581fe28e61b44b1688a903544313d48f",
+            "size": 22204462,
+            "pointerSize": 133
+          }
+        }
+      ]
+    },
+    "princeton-nlp/CharXiv": {
+      "sha": "f441eb632fc62f6f777830a0f47619e6e86459b0",
+      "siblings": [
+        {
+          "rfilename": "README.md",
+          "blobId": "45d73933d0d5c915d6a01bc6c838c7c20edf18eb",
+          "size": 3944
+        },
+        {
+          "rfilename": "val.parquet",
+          "blobId": "1f3c35b4729c5f2aa1f78a858e41f3313adb618d",
+          "size": 66796186,
+          "lfs": {
+            "sha256": "ed0613ac7d5c045ac30a63d78529217bf267218948170a2b26ec37eaeea1605d",
+            "size": 66796186,
+            "pointerSize": 133
+          }
+        }
+      ]
+    },
+    "ahmed-masry/ChartQAPro": {
+      "sha": "e27c2874825874d6767d2bbc538ed4f0dc2c64c2",
+      "siblings": [
+        {
+          "rfilename": "README.md",
+          "blobId": "1115db45fe1f8254ddbc09168b772d3ffb87b4e8",
+          "size": 3625
+        },
+        {
+          "rfilename": "data/test-00000-of-00001.parquet",
+          "blobId": "020e94c1b88d955413a02f641b282b75c88e1fe0",
+          "size": 193053989,
+          "lfs": {
+            "sha256": "feb03a5579e49114b45350b75aed7f674e285f795a425c83e22f400095c91489",
+            "size": 193053989,
+            "pointerSize": 134
+          }
+        }
+      ]
+    },
+    "AI-4-Everyone/Visual-TableQA": {
+      "sha": "6a5f65a15d16fd611ffed6f848035e25e26dc9f7",
+      "siblings": [
+        {
+          "rfilename": "README.md",
+          "blobId": "0877ca7ce6f21e70fc90597fa330ef890ff0b7af",
+          "size": 5273
+        },
+        {
+          "rfilename": "data/test-00000-of-00001.parquet",
+          "blobId": "d5556bf20be29d5e2f17a8671a364f7e8558a441",
+          "size": 480107452,
+          "lfs": {
+            "sha256": "3ed3f703b721f841cd24a16aa4c4c0473d110b898f0de883b84e1a964d88e19f",
+            "size": 480107452,
+            "pointerSize": 134
+          }
+        },
+        {
+          "rfilename": "data/train-00000-of-00008.parquet",
+          "blobId": "7be4e73018b6efeb08f36175e0d372e6f3bb408c",
+          "size": 442856568,
+          "lfs": {
+            "sha256": "0de96fbd78f3a83950ed1055d71cc3a86239da3c4b181fb34fd8c329dba57c85",
+            "size": 442856568,
+            "pointerSize": 134
+          }
+        },
+        {
+          "rfilename": "data/train-00001-of-00008.parquet",
+          "blobId": "640507995ad6f369617df5af9c043aa16cd30da3",
+          "size": 437710453,
+          "lfs": {
+            "sha256": "a6fdc73fff26c113ab26781840391f20164f56c67e9282e351523fff8206067a",
+            "size": 437710453,
+            "pointerSize": 134
+          }
+        },
+        {
+          "rfilename": "data/train-00002-of-00008.parquet",
+          "blobId": "2b5a0d52106af7258a378ae69542297f912d42ee",
+          "size": 464120505,
+          "lfs": {
+            "sha256": "45f76471ab33d97a32ae5144764fc5262daffe4b4e4c4dda271b0c686445f63f",
+            "size": 464120505,
+            "pointerSize": 134
+          }
+        },
+        {
+          "rfilename": "data/train-00003-of-00008.parquet",
+          "blobId": "c1e0a23cfe390c5d155cfbbf5a6cb33d3b9e4f11",
+          "size": 435390248,
+          "lfs": {
+            "sha256": "0a7141694ca541848097f6051b1334c5989bc8d756f955ddf9a1fa5a4e90209d",
+            "size": 435390248,
+            "pointerSize": 134
+          }
+        },
+        {
+          "rfilename": "data/train-00004-of-00008.parquet",
+          "blobId": "fabe08afcb972f92744810c5f88e1d30c89122be",
+          "size": 453090485,
+          "lfs": {
+            "sha256": "16c8a6aabfb0fa40274cee5f2e296e5c8eb03aa6e4988b117418a57ae5e63dc7",
+            "size": 453090485,
+            "pointerSize": 134
+          }
+        },
+        {
+          "rfilename": "data/train-00005-of-00008.parquet",
+          "blobId": "7c356e94ab4b4675c351c8fc62f7a9d676f93a9b",
+          "size": 455183825,
+          "lfs": {
+            "sha256": "f6f858bea77ddc14bb774f2f23d065e77b8a387020d624889f724afd49f34c51",
+            "size": 455183825,
+            "pointerSize": 134
+          }
+        },
+        {
+          "rfilename": "data/train-00006-of-00008.parquet",
+          "blobId": "230b60fcfbd712127c45c062ec7bc5bfbd1b9e3d",
+          "size": 459064177,
+          "lfs": {
+            "sha256": "0b2baa8c50efcae420bd83274283ee60c5ece17f2734b68d357b894e7d7cc709",
+            "size": 459064177,
+            "pointerSize": 134
+          }
+        },
+        {
+          "rfilename": "data/train-00007-of-00008.parquet",
+          "blobId": "df4283252730f669eb1e75d2e858abc85115dbee",
+          "size": 462918579,
+          "lfs": {
+            "sha256": "24564152606e2902e031fd65dc1a9fa4a66c6ee6294fdcc31d04e5bbac91e5d8",
+            "size": 462918579,
+            "pointerSize": 134
+          }
+        },
+        {
+          "rfilename": "data/validation-00000-of-00002.parquet",
+          "blobId": "54ad004b79e8ad981168242fb272cf200d17bdce",
+          "size": 253383800,
+          "lfs": {
+            "sha256": "3872de4997ed51209e5cf814c4227cd717e39f11e239e2e7015bb4c38f461233",
+            "size": 253383800,
+            "pointerSize": 134
+          }
+        },
+        {
+          "rfilename": "data/validation-00001-of-00002.parquet",
+          "blobId": "53a0e51e45f975a9907752f37ee40a267a46dc9a",
+          "size": 250956048,
+          "lfs": {
+            "sha256": "53d79211a3ae4370baa1fc853410308018b858a9d5bbda64f00feb5fd0728821",
+            "size": 250956048,
+            "pointerSize": 134
+          }
+        }
+      ]
+    },
+    "HuggingFaceM4/ChartQA": {
+      "sha": "b605b6e08b57faf4359aeb2fe6a3ca595f99b6c5",
+      "siblings": [
+        {
+          "rfilename": "README.md",
+          "blobId": "58a75bb531a8493e685ae810036edd6215e27201",
+          "size": 852
+        },
+        {
+          "rfilename": "data/test-00000-of-00001-e2cd0b7a0f9eb20d.parquet",
+          "blobId": "8604d7a70919c596b269823853e06bbdf48c2b5b",
+          "size": 68898419,
+          "lfs": {
+            "sha256": "efcf31333368c485eb569ec7bd4cc3694bd0e8e1a06c503124b51d27c924491d",
+            "size": 68898419,
+            "pointerSize": 133
+          }
+        }
+      ]
+    },
+    "MMTU-benchmark/MMTU": {
+      "sha": "7f402118f7706399b6d98c4fcb4a860272fbcfb3",
+      "siblings": [
+        {
+          "rfilename": "README.md",
+          "blobId": "0f2012408788184364131398e6f28c141d5e6ed0",
+          "size": 5910
+        },
+        {
+          "rfilename": "data/train-00000-of-00001.parquet",
+          "blobId": "89275403fe320ba8cf06085b484d803b84f842e5",
+          "size": 124690622,
+          "lfs": {
+            "sha256": "2050dce8384b90a36dae0efb17319ce762d4250b637856c4d4da2b66878e3184",
+            "size": 124690622,
+            "pointerSize": 134
+          }
+        }
+      ]
+    }
+  }
+}

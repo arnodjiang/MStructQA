@@ -1,0 +1,4 @@
+interface:
+  display_name: "Multilingual Visual Benchmark"
+  short_description: "Rebuild charts and tables with multilingual code and images"
+  default_prompt: "Use $multilingual-visual-benchmark to reconstruct this chart or table, translate its labels and QA, render multilingual images, and preserve the original and translated Python code."

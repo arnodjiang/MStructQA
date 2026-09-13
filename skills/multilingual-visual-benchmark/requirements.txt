@@ -1,0 +1,10 @@
+# Python 3.9+; tested package versions used by the MVisQA pilot.
+numpy>=1.24,<3
+Pillow>=10,<13
+matplotlib>=3.9,<4
+uharfbuzz>=0.51,<1
+freetype-py>=2.5,<3
+python-bidi>=0.6,<0.7
+# Required only for live translation / --env-file:
+openai>=2.48,<3
+python-dotenv>=1,<2
