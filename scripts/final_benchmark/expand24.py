@@ -44,6 +44,7 @@ def main():
     p.add_argument('--source',default=str(pipeline.ROOT/'data/visual_benchmark/final_128_v3'))
     p.add_argument('--stage',choices=['prepare','translate','render','export','all'],default='all')
     p.add_argument('--workers',type=int,default=4)
+    p.add_argument('--translation-batch-size',type=int,choices=range(1,14),help='Override languages per translation request; use 1 for repeated gateway timeouts.')
     p.add_argument('--retry-failed',action='store_true')
     p.add_argument('--ids')
     p.add_argument('--partial',action='store_true',help='Export an explicitly incomplete preview of rendered cases.')
@@ -102,7 +103,7 @@ def main():
                     failures=b.stage(stage,ready,b.render,min(a.workers,4))
                     if failures:print('Rendering failures recorded; continuing other cases.',flush=True)
                 if not a.watch_render or all((b.folder(c['id'])/'render_complete.json').exists() for c in cases):break
-                if (out/'translation_failures.json').exists() and not ready:
+                if (out/'translate_failures.json').exists() and not ready:
                     raise SystemExit('Available cases processed; unresolved cases retained for the next run.')
                 import time
                 time.sleep(20)

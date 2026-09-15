@@ -272,6 +272,8 @@ class Builder:
             chars = sum(len(v) for v in spec['labels'].values())
             # Batching languages reduces round trips without risking huge table responses.
             batch_size = 5 if chars < 900 else 3 if chars < 2200 else 2 if chars < 4000 else 1
+            if getattr(self.args, 'translation_batch_size', None):
+                batch_size = self.args.translation_batch_size
             languages = [x for x in LANGUAGES if x != 'en' and not (folder/'locales'/(x+'.json')).exists()]
             for start in range(0, len(languages), batch_size):
                 batch = languages[start:start+batch_size]

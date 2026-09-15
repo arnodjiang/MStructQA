@@ -29,4 +29,3 @@ The reviewer may be the same model as the generator. A separate call is not an i
 Report candidate and screened denominators, including exclusions by source and language. Keep variants of shared figures/tables/documents in one split. Cluster uncertainty estimates at source-group level; 70 variants are not 70 independent observations. Report language-specific coverage when screening differs across languages.
 
 `score_val.py` implements a preliminary strict matching baseline with clustered uncertainty estimates. Exact match is unsuitable for some numeric approximations, unordered lists and long answers. Any normalization, tolerance or judge-based scoring must be declared and validated before evaluation. Do not invent tolerances to make reconstructed examples pass.
-

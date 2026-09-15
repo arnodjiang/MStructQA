@@ -4,6 +4,7 @@ from collections import Counter
 import copy
 import hashlib
 import json
+import os
 from pathlib import Path
 import sys
 import time
@@ -69,7 +70,7 @@ def finalize(out):
             record['visual_metadata'].update(width=layout['width'],height=layout['height'],aspect_ratio=layout['width']/layout['height'],data_sha256=row['data_sha256'])
             record['audit'].update(status='accepted' if accepted else 'needs_review',mechanical_issues=checks,
                 localization_flags=flags,language_checks={l:langchecks[l] for l in {ql,vl}},
-                review_path='../../final_128_v3/validation_release/reviews/'+cid+'.json',
+                review_path=os.path.relpath(source/'validation_release/reviews'/(cid+'.json'),dest),
                 expansion_review_path='../expansion_audit/reviews/'+cid+'.json',human_verified=False,
                 scope='Source audit and old-language semantics inherited; new-language text and images reviewed separately; all code and geometry rechecked.')
             records.append(record)
@@ -97,12 +98,20 @@ def finalize(out):
         'accepted_samples':sum(r['audit']['status']=='accepted' for r in records),'needs_review_samples':sum(r['audit']['status']!='accepted' for r in records),
         'source_spec_and_qa_unchanged':True,'all_standalone_constants_verified':True,'representative_execution':'all24 languages on one chart and one table',
         'human_verified':False})
+    save(out/'expansion_audit/progress.json',{'completed':len(bycase),'expected':len(bycase),
+        'running':0,'failures':[],'updated_at':now(),
+        'note':'All case audits completed; semantic fail/uncertain verdicts remain in their review records. Historical request failures remain in API attempt logs.'})
+    status=read(out/'status.json');status.update(build_complete=True,updated_at=now());save(out/'status.json',status)
     print(json.dumps(read(out/'completion.json')),flush=True)
 
 
 def main():
     p=argparse.ArgumentParser();p.add_argument('--output',default=str(pipeline.ROOT/'data/visual_benchmark/final_128_24lang_v1'));p.add_argument('--watch',action='store_true');a=p.parse_args();out=Path(a.output)
-    while not (out/'validation.json').exists() or len(list((out/'expansion_audit/reviews').glob('*.json')))!=128:
+    def ready():
+        if not (out/'validation.json').exists() or not (out/'benchmark.jsonl').exists():return False
+        report=read(out/'validation.json')
+        return not report.get('missing_cases') and report.get('samples')==8960 and len(list((out/'expansion_audit/reviews').glob('*.json')))==128
+    while not ready():
         if not a.watch:raise SystemExit('Generation or expanded-language review incomplete.')
         time.sleep(20)
     finalize(out)

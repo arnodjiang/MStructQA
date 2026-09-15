@@ -2,7 +2,7 @@
 
 **A Multilingual Benchmark for Chart and Visual Tabular Question Answering in MLLMs**
 
-[Getting Started](#getting-started) · [Benchmark](#benchmark) · [Pipeline](#construction-pipeline) · [Prompts](prompts/README.md) · [Documentation](#documentation)
+[Getting Started](#getting-started) · [Benchmark](#benchmark) · [Pipeline](#construction-pipeline) · [Data Review](#inspect-and-review-data) · [Prompts](prompts/README.md) · [Documentation](#documentation)
 
 MStructQA provides a **24-language** benchmark construction framework for evaluating how multimodal large language models understand charts and visual tables. It pairs localized visuals with questions and reference answers while preserving the underlying numerical data, table structure and question intent.
 
@@ -129,6 +129,29 @@ This uses synthetic data and checked-in translations. Add `--font /absolute/path
 The repository distributes code, prompts and synthetic examples; source and generated benchmark data are obtained through the pipeline. Actual run statistics and completion are recorded in the output manifests.
 
 Source fidelity and localization quality are assessed separately. A successful translation does not override a failed source audit. Automated reviewers can use the same model as generation and do not constitute human certification. Exact reproduction requires the saved specifications, labels, code and fonts; new model calls can produce different results.
+
+## Inspect and review data
+
+Launch the local inspection interface after finalization:
+
+```bash
+python scripts/review_dataset.py --dataset data/visual_benchmark/mstructqa_24 --port 8765
+```
+
+Open **http://127.0.0.1:8765**. The server uses only Python's standard library, binds to the loopback interface and does not make API calls.
+
+- Inspect expected versus observed language/configuration coverage, missing artifacts, duplicate IDs and image SHA-256 checks.
+- Filter cases by source/ID, completeness issues, automated review flags or unfinished human review.
+- Compare upstream and localized images, source and translated QA, protected label dictionaries and automated review evidence.
+- Save a verdict and notes for each QA configuration; export annotations as JSON. Reviews carry a record fingerprint, so changed records invalidate previous conclusions.
+
+Human annotations are stored separately in `<dataset>/manual_review/annotations.json`, which is excluded from Git under the default data directory. They do **not** overwrite benchmark records or automatically admit examples into the screened split. The interface distinguishes file/metadata consistency from semantic correctness; image reconstruction and reference-answer validity still require human adjudication. See [the review guide](docs/DATA_REVIEW.md) for the workflow and limitations.
+
+## Evaluation and reporting
+
+This is a benchmark construction and inspection repository, not a model checkpoint distribution. For evaluation, generate model predictions against a frozen, reviewed export, keep all language variants of each source in the same split, and report results by language, setting and visual type. Report the evaluated denominator and exclusions alongside scores.
+
+The preliminary strict-matching scorer is documented in [the evaluation design](docs/DESIGN.md); inspect its arguments with `python -m scripts.final_benchmark.score_val --help`. Numeric tolerances, alternative-answer handling and model-based judges must be explicitly specified and validated for the chosen experiment. The repository does not claim published model rankings or human-validated coverage from automated checks alone.
 
 ## Documentation
 

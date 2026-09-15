@@ -81,7 +81,7 @@ def main():
                 except Exception as exc:failures.append({'id':cid,'type':type(exc).__name__,'error':str(exc)[-800:]});print('audit failed',cid,type(exc).__name__,flush=True)
                 del running[future]
             complete={p.stem for p in (dest/'reviews').glob('*.json')}
-            capacity=4 if (out/'translation_failures.json').exists() else 1
+            capacity=4 if (out/'translate_failures.json').exists() else 1
             for cid in ids:
                 if len(running)>=capacity:break
                 if cid in complete or cid in attempted or not (out/'cases'/cid/'render_complete.json').exists():continue
