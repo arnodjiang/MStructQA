@@ -44,6 +44,8 @@ Each source visual is localized into separate language versions. Numerical conte
 
 For each base question, the distinct language configurations are `(v, q, q)`, where `v` is the visual language and `q` belongs to `{v, zh, en}`. Chinese–Chinese and English–English configurations are included only once. Other all-to-all language pairs and independently selected answer languages are outside this protocol.
 
+For answers consisting only of ASCII numerals (including signed decimals and comma-grouped thousands), exported questions omit the appended response-language instruction. Answers containing words, units, percentages or lists retain it. The answer-language metadata remains unchanged.
+
 Language variants share their base identity and source provenance. They must remain grouped across evaluation splits rather than being treated as independent source questions.
 
 ### Source datasets

@@ -1,4 +1,6 @@
 """Assemble 31 configurations/case, standalone code and reproducibility metadata."""
+from .query_policy import with_reply
+
 import argparse
 import ast
 from collections import Counter
@@ -161,7 +163,7 @@ def assemble(out, partial=False):
                           'visual_language': language, 'query_language': qlang, 'answer_language': qlang,
                           'configuration': 'monolingual' if language == qlang else 'cross_' + qlang,
                           'image': entry['image'], 'image_sha256': entry['image_sha256'],
-                          'question': question + '\n' + REPLY[qlang], 'question_without_instruction': question,
+                          'question': with_reply(question, answer, REPLY[qlang]), 'question_without_instruction': question,
                           'answer': answer, 'answer_type': qa.get('answer_type'),
                           'source_question': source['question'], 'source_answer': source['answer'],
                           'canonical_answer_en': qa['answer'],
@@ -180,7 +182,7 @@ def assemble(out, partial=False):
     for r in records:
         assert r['answer_language'] == r['query_language']
         assert '[[' not in r['question'] and '[[' not in r['answer']
-        assert r['question'].endswith(REPLY[r['answer_language']])
+        assert r['question'] == with_reply(r['question_without_instruction'], r['answer'], REPLY[r['answer_language']])
     save(out/'image_manifest.json', images)
     save(out/'case_manifest.json', cases)
     save(out/'localization_checks.json', localization)

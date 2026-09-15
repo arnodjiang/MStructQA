@@ -1,4 +1,6 @@
 """Resumable all-language multimodal admission review and validation export."""
+from .query_policy import with_reply
+
 import argparse
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from collections import Counter
@@ -154,7 +156,7 @@ def main():
             image=out/r['image'];layout=read(image.with_suffix('.layout.json'))
             if hashlib.sha256(image.read_bytes()).hexdigest()!=r['image_sha256']:issues.append('image_hash')
             if not layout.get('all_text_inside_canvas') or not layout.get('all_text_inside_cells') or layout.get('missing_glyphs'):issues.append('render_geometry_or_glyphs')
-            expected=bind(locales[ql]['question'],locales[ql]['labels'])+'\n'+REPLY[al]
+            expected=with_reply(bind(locales[ql]['question'],locales[ql]['labels']),r['answer'],REPLY[al])
             if r['question']!=expected:issues.append('query_binding')
             if r['answer']!=bind(locales[al]['answer_template'],locales[al]['labels']):issues.append('answer_binding')
             if '[[' in r['question'] or '[[' in r['answer']:issues.append('unbound_reference')

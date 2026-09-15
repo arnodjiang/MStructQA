@@ -1,4 +1,6 @@
 """Finalize the expanded release after generation and new-language audits finish."""
+from .query_policy import with_reply
+
 import argparse
 from collections import Counter
 import copy
@@ -52,7 +54,7 @@ def finalize(out):
         for row in variants:
             ql,vl=row['query_language'],row['visual_language'];checks=[]
             assert row['answer_language']==ql and ql in {vl,'en','zh'}
-            assert row['question']==pipeline.bind(loc[ql]['question'],loc[ql]['labels'])+'\n'+export.REPLY[ql]
+            assert row['question']==with_reply(pipeline.bind(loc[ql]['question'],loc[ql]['labels']),row['answer'],export.REPLY[ql])
             assert row['answer']==pipeline.bind(loc[ql]['answer_template'],loc[ql]['labels'])
             image=out/row['image'];layout=read(image.with_suffix('.layout.json'))
             assert hashlib.sha256(image.read_bytes()).hexdigest()==row['image_sha256']

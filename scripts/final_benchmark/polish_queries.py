@@ -1,4 +1,6 @@
 """Versioned, answer-blind minimal query editing with independent semantic review."""
+from .query_policy import with_reply
+
 import argparse
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -211,11 +213,11 @@ def main():
         row=dict(old); cid,l=old['id'],old['query_language'];r=results[cid,l]
         loc=read(src/'cases'/cid/'locales'/f'{l}.json')
         q=bind(r['query'],loc['labels']);row['question_original']=old['question']
-        row['question_without_instruction']=q;row['question']=q+'\n'+REPLY[old['answer_language']]
+        row['question_without_instruction']=q;row['question']=with_reply(q,row['answer'],REPLY[old['answer_language']])
         row['query_edit_status']=r['status'];row['query_revision']=digest([old['variant_id'],q])
         for k in ('image','code'):row[k]=prefix+old[k]
         assert row['answer']==old['answer'] and row['image_sha256']==old['image_sha256']
-        if r['status']!='edited':assert row['question']==old['question']
+        if r['status']!='edited':assert q==old['question_without_instruction']
         rewritten.append(row)
     (out/'benchmark.jsonl').write_text(''.join(json.dumps(x,ensure_ascii=False)+'\n' for x in rewritten))
     byid={r['variant_id']:r for r in rewritten}
