@@ -40,5 +40,5 @@ def download(repo, revision, output):
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--repo',default='arnodjiang/MStructBench');p.add_argument('--revision',default='main')
-    p.add_argument('--output',type=Path,default=Path('data/visual_benchmark/final_128_24lang_v4_context'))
+    p.add_argument('--output',type=Path,default=Path('data/visual_benchmark/final_128_24lang_v5_visual_types'))
     a=p.parse_args();download(a.repo,a.revision,a.output)

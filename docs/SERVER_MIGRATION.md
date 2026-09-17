@@ -20,7 +20,7 @@ python -m scripts.distribution.download
 
 The downloader retrieves `artifacts/mstructqa-current.tar.gz`, verifies its
 checksum, validates the canonical reference JSONL and all image hashes, and
-extracts to `data/visual_benchmark/final_128_24lang_v4_context`. It refuses to
+extracts to `data/visual_benchmark/final_128_24lang_v5_visual_types`. It refuses to
 overwrite an existing directory. For a fixed data version add
 `--revision <HF_COMMIT_SHA>`; record `git rev-parse HEAD` for the code version.
 The rendered images are ready to use: evaluating them does not require fonts,
@@ -59,7 +59,7 @@ text judge and updates that model's LaTeX row after all samples are judged.
 ```bash
 mkdir -p logs
 nohup .venv/bin/python -u -m scripts.evaluation.run \
-  --dataset data/visual_benchmark/final_128_24lang_v4_context \
+  --dataset data/visual_benchmark/final_128_24lang_v5_visual_types \
   --output data/evaluation/your_model \
   --model YOUR_MODEL --workers 3 --request-interval 3 \
   --llm-judge --judge-model gpt-6-astra \
@@ -77,7 +77,7 @@ a global 6.5-second interval, including retries, with two workers.
 ```bash
 mkdir -p logs
 nohup .venv/bin/python -u -m scripts.evaluation.run_token_router \
-  --dataset data/visual_benchmark/final_128_24lang_v4_context \
+  --dataset data/visual_benchmark/final_128_24lang_v5_visual_types \
   --output data/evaluation/your_gemini_model \
   --model google/YOUR_MODEL --workers 2 --request-interval 6.5 \
   --llm-judge > logs/your_gemini_model.log 2>&1 &
@@ -117,7 +117,7 @@ counts do not directly establish monetary charges.
 
 ```bash
 python -m scripts.distribution.export_hf \
-  --dataset data/visual_benchmark/final_128_24lang_v4_context \
+  --dataset data/visual_benchmark/final_128_24lang_v5_visual_types \
   --output data/hf_publish/MStructBench
 cp scripts/distribution/HF_README.md data/hf_publish/MStructBench/README.md
 hf auth login

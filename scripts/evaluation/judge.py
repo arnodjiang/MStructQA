@@ -173,7 +173,7 @@ class Judge:
         corrected=[dict(r,answer=corrected_reference(r,self.corrections)[0]) for r in self.refs]
         cohorts={}
         for name,rows in [('all',corrected),('screened',[r for r in corrected if r.get('audit',{}).get('status')=='accepted']),
-                          ('chart',[r for r in corrected if r['visual_kind']=='chart']),('table',[r for r in corrected if r['visual_kind']=='table'])]:
+                          ('chart',[r for r in corrected if r.get('visual_family',r['visual_kind'])=='chart']),('table',[r for r in corrected if r.get('visual_family',r['visual_kind'])=='table'])]:
             cohorts[name],_=summarize(rows,self.predictions,verdicts)
         report={'metric':'Semantic ACC: strict matching plus text-only LLM equivalence adjudication',
             'model':self.manifest['model'],'judge_model':self.api.config['OPENAI_MODEL'],'same_model_judge':read(self.out/'manifest.json')['same_model_judge'],

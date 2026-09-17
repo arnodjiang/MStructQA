@@ -1,5 +1,5 @@
 {
-  "active_dataset": "data/visual_benchmark/final_128_24lang_v4_context",
+  "active_dataset": "data/visual_benchmark/final_128_24lang_v5_visual_types",
   "retired_datasets": [
     "data/visual_benchmark/final_128_24lang_v1",
     "data/visual_benchmark/final_128_24lang_v2",
@@ -27,5 +27,6 @@
     "data/translations/zh_pilot_5",
     "data/demo_open_source"
   ],
-  "original_provenance_store": "data/evaluation/provenance_assets"
+  "original_provenance_store": "data/evaluation/provenance_assets",
+  "frozen_evaluation_dataset": "data/visual_benchmark/final_128_24lang_v4_context"
 }

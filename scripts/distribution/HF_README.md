@@ -105,7 +105,9 @@ LQA/XQA columns. All language variants of a source question share a base ID.
 | `query_language`, `image_language`, `answer_language` | ISO 639-1 language codes |
 | `configuration` | Original setting identifier; language fields define LQA/XQA membership |
 | `source_context` | Translated external document prose; empty if absent |
-| `source`, `visual_kind` | Upstream dataset and chart/table category |
+| `source` | Upstream dataset |
+| `visual_kind` | Fine-grained GPT-6 visual category, such as Grouped Bar Chart or Column-Spanning Table |
+| `visual_family` | Legacy coarse chart/table grouping for compatible evaluation cohorts |
 | `image_sha256` | Checksum of the exact image bytes |
 | `metadata_json` | Lossless canonical reference row, including provenance and automated audit flags |
 
@@ -114,6 +116,21 @@ send answers, provenance or audit annotations to the model. External prose is
 translated into the question language. Table contents remain in the image and
 are not transcribed into the prompt. For exact prompt serialization, use
 `scripts.evaluation.context_input.input_text` on `json.loads(metadata_json)`.
+
+## Visual categories
+
+`visual_kind` is classified by GPT-6 Astra from one current English image per base
+case and shared across its localized variants. It describes the visible chart
+type or table merge structure; questions and answers are not classifier inputs.
+Tables use **Simple Table**, **Row-Spanning Table**, **Column-Spanning Table** or
+**Mixed-Spanning Table**. Simple means no merged rows/columns, not a one-cell table.
+Charts use a more specific vocabulary for bars, lines, distributions, spatial
+fields, diagrams and composites. `visual_family` retains the legacy chart/table
+cohort. See [taxonomy definitions](https://github.com/arnodjiang/MStructQA/blob/main/docs/VISUAL_TAXONOMY.md).
+The exact archive includes `visual_taxonomy.json` and `visual_classification.json`
+with per-case evidence, secondary types, layout and model confidence. These are
+model-generated annotations, not human certification. The change affects metadata
+only: images, queries, reference answers and source context are unchanged.
 
 ## Sources and construction
 
@@ -174,3 +191,42 @@ alongside MStructQA.
 ```
 
 This is a repository citation; no accepted venue or publication DOI is asserted.
+
+## Observed visual types
+
+The current release contains 32 primary types. Counts are base cases; each case contributes 70 QA configurations.
+
+| Type | Base cases | QA |
+| --- | ---: | ---: |
+| Multi-Series Line Graph | 23 | 1610 |
+| Simple Table | 20 | 1400 |
+| Column-Spanning Table | 15 | 1050 |
+| Mixed Chart | 9 | 630 |
+| Grouped Bar Chart | 5 | 350 |
+| Line Graph with Uncertainty Bands | 5 | 350 |
+| Heatmap | 4 | 280 |
+| Line Graph | 4 | 280 |
+| Pie Chart | 4 | 280 |
+| Horizontal Bar Chart | 3 | 210 |
+| Mixed-Spanning Table | 3 | 210 |
+| Stacked Bar Chart | 3 | 210 |
+| Area Chart | 2 | 140 |
+| Bar-Line Combination Chart | 2 | 140 |
+| Chart-Table Composite | 2 | 140 |
+| Cumulative Distribution Plot | 2 | 140 |
+| Density Plot | 2 | 140 |
+| Diverging Bar Chart | 2 | 140 |
+| Line Graph with Error Bars | 2 | 140 |
+| Phase Diagram | 2 | 140 |
+| Row-Spanning Table | 2 | 140 |
+| Scatter Plot with Error Bars | 2 | 140 |
+| 3D Streamline Plot | 1 | 70 |
+| Bubble Chart | 1 | 70 |
+| Confusion Matrix | 1 | 70 |
+| Contour Plot | 1 | 70 |
+| Correlation Matrix | 1 | 70 |
+| Histogram | 1 | 70 |
+| Lollipop Chart | 1 | 70 |
+| Scatter Plot | 1 | 70 |
+| Table-Diagram Composite | 1 | 70 |
+| Vertical Bar Chart | 1 | 70 |

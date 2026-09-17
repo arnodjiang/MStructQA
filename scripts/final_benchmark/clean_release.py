@@ -10,7 +10,7 @@ VERSION = 'current_artifacts_only_v1'
 REFERENCE_FIELDS = {
     'id', 'base_id', 'case_id', 'split', 'query', 'answer', 'image_path', 'image_sha256',
     'code_path', 'query_language', 'image_language', 'answer_language', 'visual_kind',
-    'source', 'configuration', 'task_tags', 'answer_type', 'provenance',
+    'source', 'configuration', 'task_tags', 'answer_type', 'provenance', 'visual_family',
     'reference_correction_id', 'upstream_answer_sha256', 'source_context', 'input_condition',
 }
 AUDIT_FIELDS = {'status', 'human_verified', 'source_fidelity'}
@@ -21,7 +21,8 @@ FORBIDDEN_KEYS = {'original_query', 'original_answer', 'upstream_original_answer
 ROOT_FILES = {'README.md', 'benchmark.jsonl', 'case_manifest.json', 'image_manifest.json',
               'provenance_index.json', 'release_manifest.json', 'context_revision.json',
               'invalidated_evaluation_inputs.json', 'prompt_context_manifest.json',
-              'context_validation.json', 'clean_release_validation.json'}
+              'context_validation.json', 'clean_release_validation.json',
+              'visual_classification.json', 'visual_taxonomy.json'}
 
 
 def clean_reference(row):

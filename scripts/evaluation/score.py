@@ -75,8 +75,8 @@ def score_run(run):
         raise ValueError('Nonterminal predictions')
     results = {}
     for name, subset in [('all',refs),('screened',[r for r in refs if r.get('audit',{}).get('status')=='accepted']),
-                         ('chart',[r for r in refs if r['visual_kind']=='chart']),
-                         ('table',[r for r in refs if r['visual_kind']=='table'])]:
+                         ('chart',[r for r in refs if r.get('visual_family',r['visual_kind'])=='chart']),
+                         ('table',[r for r in refs if r.get('visual_family',r['visual_kind'])=='table'])]:
         results[name], details = summarize(subset,preds)
         if name == 'all':
             (run/'scored_predictions.jsonl').write_text(''.join(json.dumps(x,ensure_ascii=False)+'\n' for x in details))

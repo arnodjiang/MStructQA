@@ -144,6 +144,13 @@ The current dataset is distributed on [Hugging Face](https://huggingface.co/data
 
 Source fidelity and localization quality are assessed separately. A successful translation does not override a failed source audit. Automated reviewers can use the same model as generation and do not constitute human certification. Exact reproduction requires the saved specifications, labels, code and fonts; new model calls can produce different results.
 
+## Visual categories
+
+The dataset’s `visual_kind` provides fine-grained GPT-6 image classifications,
+including chart subtypes and four table merge structures. `visual_family` retains
+the coarse chart/table cohorts. See [visual taxonomy](docs/VISUAL_TAXONOMY.md) for
+definitions, classification prompts and reproducibility.
+
 ## Evaluation and reporting
 
 Original source identities and unmodified model inputs/outputs are retained in

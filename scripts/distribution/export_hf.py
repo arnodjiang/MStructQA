@@ -30,6 +30,8 @@ def export(dataset, output):
     (output/'data').mkdir(parents=True)
     names = ['id', 'base_id', 'case_id', 'query', 'answer', 'query_language', 'image_language',
              'answer_language', 'visual_kind', 'source', 'configuration', 'image_sha256']
+    if any('visual_family' in row for row in rows):
+        names.append('visual_family')
     features = Features({**{k: Value('string') for k in names}, 'image': Image(),
                          'source_context': Value('string'), 'metadata_json': Value('string')})
     shard_size = 400
@@ -56,6 +58,7 @@ def export(dataset, output):
                 'visuals':len({(r['case_id'],r['image_language']) for r in rows}),
                 'languages':sorted({r['image_language'] for r in rows}),
                 'sources':dict(Counter(r['source'] for r in rows)),
+                'visual_kind_counts':dict(Counter(r['visual_kind'] for r in rows)),
                 'references_sha256':sha(dataset/'validation_release/val.candidates.jsonl'),
                 'files':{str(p.relative_to(output)):sha(p) for p in sorted(output.rglob('*')) if p.is_file()}}
     (output/'release.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2)+'\n')

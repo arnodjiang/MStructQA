@@ -41,7 +41,7 @@ def resume_answer_mode(attempts, retry_failed=False):
 def smoke_rows(rows):
     selected=[]
     for kind,lang in [('chart','en'),('table','zh')]:
-        choices=[r for r in rows if r['visual_kind']==kind and r['image_language']==lang and r['query_language']==lang]
+        choices=[r for r in rows if r.get('visual_family',r['visual_kind'])==kind and r['image_language']==lang and r['query_language']==lang]
         if not choices:raise ValueError('Smoke test requires English chart and Chinese table configurations')
         selected.append(choices[0])
     return selected
