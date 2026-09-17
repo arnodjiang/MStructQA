@@ -18,8 +18,13 @@ def main():
     runtime.put, runtime.wrap, runtime.mask = drawing.put, drawing.wrap, drawing.mask
     spec = json.loads(spec_path.read_text())
     locale = json.loads(locale_path.read_text())
+    from scripts.final_benchmark.provenance import render_binding, sha256
+    if locale.get('input_binding') and (locale['input_binding']['source']['case_id'] != spec.get('id')
+            or locale['input_binding']['source']['base_id'] != spec.get('base_id')):
+        raise ValueError('render_locale_case_mismatch')
+    fingerprint = render_binding(spec, locale.get('labels', locale))
     labels = locale.get('labels', locale)
-    if spec['kind'] == 'chart':
+    if spec['kind'] == 'chart' or spec.get('render_mode') == 'custom':
         runtime.validate_code(spec['python_code'])
         namespace = {k: v for k, v in vars(runtime).items() if not k.startswith('_')}
         exec(compile(spec['python_code'], '<validated_chart_adapter>', 'exec'), namespace)
@@ -31,6 +36,7 @@ def main():
         raise ValueError('image_too_large')
     image.save(output, optimize=True)
     report = {'width': image.width, 'height': image.height, 'boxes': boxes,
+              'render_binding': fingerprint, 'image_sha256': sha256(output),
               'fonts_used': sorted(drawing.USED_FONTS),
               'missing_glyphs': sorted(set(drawing.MISSING_GLYPHS)),
               'all_text_inside_canvas': all(b['inside_canvas'] for b in boxes),

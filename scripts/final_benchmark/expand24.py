@@ -9,6 +9,7 @@ from .languages24 import activate, NEW_LANGUAGES, RULES
 from . import pipeline, prompts, export
 from .api import read, save, digest, now
 from .polish_queries import COMMON, RULES as ORIGINAL_QUERY_RULES
+from .provenance import source_binding, verify_spec, verify_polish
 
 
 def normalize_digits(folder):
@@ -40,8 +41,9 @@ def normalize_digits(folder):
 
 def main():
     p=argparse.ArgumentParser()
-    p.add_argument('--output',default=str(pipeline.ROOT/'data/visual_benchmark/final_128_24lang_v1'))
+    p.add_argument('--output',default=str(pipeline.ROOT/'data/visual_benchmark/mstructqa_24'))
     p.add_argument('--source',default=str(pipeline.ROOT/'data/visual_benchmark/final_128_v3'))
+    p.add_argument('--query-polish',type=Path,help='Optional reviewed query overlay directory containing queries/<lang>/<case>.json')
     p.add_argument('--stage',choices=['prepare','translate','render','export','all'],default='all')
     p.add_argument('--workers',type=int,default=4)
     p.add_argument('--translation-batch-size',type=int,choices=range(1,14),help='Override languages per translation request; use 1 for repeated gateway timeouts.')
@@ -65,20 +67,26 @@ def main():
     provenance={}
     for c in b.cases:
         cid=c['id']; origin=src/'cases'/cid;target=out/'cases'/cid
+        original_binding=source_binding(origin,c,b.identities[cid])
         target.mkdir(parents=True,exist_ok=True)
         if not (target/'original').exists():shutil.copytree(origin/'original',target/'original')
         for name in ['source.json','spec.json','qa.json','review.json','recovery_complete.json','table_extraction.json']:
             if (origin/name).exists() and not (target/name).exists():shutil.copy2(origin/name,target/name)
+        if source_binding(target,c,b.identities[cid]) != original_binding:raise ValueError('expansion_source_mismatch:'+cid)
+        verify_spec(read(target/'spec.json'),original_binding)
+        if read(target/'spec.json') != read(origin/'spec.json') or read(target/'qa.json') != read(origin/'qa.json'):
+            raise ValueError('expansion_parent_artifact_changed:'+cid)
         (target/'locales').mkdir(exist_ok=True)
         for f in (origin/'locales').glob('*.json'):
             if (target/'locales'/f.name).exists():continue
-            loc=read(f); polished=pipeline.ROOT/'data/visual_benchmark/query_polish_v1/queries'/f.stem/(cid+'.json')
-            if polished.exists():
-                r=read(polished);loc['question_original']=loc['question'];loc['question']=r['query']
+            loc=read(f); polished=Path(a.query_polish)/'queries'/f.stem/(cid+'.json') if a.query_polish else None
+            if polished is not None and polished.exists():
+                r=read(polished);verify_polish(r,cid,f.stem,c['question'],loc)
+                loc['question_original']=loc['question'];loc['question']=r['query']
                 loc['query_polish_provenance']={'path':str(polished.relative_to(pipeline.ROOT)),'sha256':hashlib.sha256(polished.read_bytes()).hexdigest(),'status':r['status']}
             save(target/'locales'/f.name,loc)
         provenance[cid]={'source_spec_sha256':digest(read(origin/'spec.json')),'source_qa_sha256':digest(read(origin/'qa.json'))}
-    save(out/'expansion_provenance.json',{'source':str(src),'query_revision':'query_polish_v1','languages':pipeline.LANGUAGES,'new_languages':NEW_LANGUAGES,'cases':provenance,'source_reconstruction_unchanged':True})
+    save(out/'expansion_provenance.json',{'source':str(src),'query_revision':str(a.query_polish) if a.query_polish else None,'languages':pipeline.LANGUAGES,'new_languages':NEW_LANGUAGES,'cases':provenance,'source_reconstruction_unchanged':True})
     pd=out/'prompts';pd.mkdir(exist_ok=True)
     extra='\nNative-language fluency requirements (apply the relevant language):\n'+'\n'.join(k+': '+v for k,v in RULES.items())
     prompts.TRANSLATE += extra+'\nKeep the QA concise and fluent after binding labels; avoid duplicated temporal particles. Preserve time-point versus interval semantics. Do not append reply-language instructions.'
@@ -96,13 +104,13 @@ def main():
                 for c in cases:
                     folder=b.folder(c['id'])
                     if all((folder/'locales'/(l+'.json')).exists() for l in pipeline.LANGUAGES):normalize_digits(folder)
-                ready=[c for c in cases if c['id'] not in attempted and not (b.folder(c['id'])/'render_complete.json').exists()
+                ready=[c for c in cases if c['id'] not in attempted and not b.render_current(c)
                        and all((b.folder(c['id'])/'locales'/(l+'.json')).exists() for l in pipeline.LANGUAGES)]
                 if ready:
                     attempted.update(c['id'] for c in ready)
                     failures=b.stage(stage,ready,b.render,min(a.workers,4))
                     if failures:print('Rendering failures recorded; continuing other cases.',flush=True)
-                if not a.watch_render or all((b.folder(c['id'])/'render_complete.json').exists() for c in cases):break
+                if not a.watch_render or all(b.render_current(c) for c in cases):break
                 if (out/'translate_failures.json').exists() and not ready:
                     raise SystemExit('Available cases processed; unresolved cases retained for the next run.')
                 import time
@@ -119,9 +127,6 @@ def main():
             (out/'benchmark.api_reviewed.jsonl').write_text(''.join(json.dumps(r,ensure_ascii=False)+'\n' for r in rows if r['status']=='api_reviewed_candidate'))
             from collections import Counter
             result['status_counts']=dict(Counter(r['status'] for r in rows));save(out/'validation.json',result)
-            export.gallery(out,read(out/'case_manifest.json'),rows,result)
-            gallery=out/'index.html';text=gallery.read_text().replace('跨 11 种','跨 24 种').replace('11 种同语','24 种同语').replace('31个','70个').replace('/1408','/3072').replace('/3968','/8960');gallery.write_text(text)
-            if result['missing_cases']:gallery.write_text(gallery.read_text().replace('href="benchmark.jsonl"','href="benchmark.partial.jsonl"'))
             print(json.dumps(result,ensure_ascii=False),flush=True)
     print(json.dumps(b.status()),flush=True)
 

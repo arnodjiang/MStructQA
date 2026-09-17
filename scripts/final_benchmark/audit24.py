@@ -33,7 +33,7 @@ Return every target language exactly once. Never rewrite the data or propose a n
 
 
 def main():
-    p=argparse.ArgumentParser();p.add_argument('--output',default=str(ROOT/'data/visual_benchmark/final_128_24lang_v1'))
+    p=argparse.ArgumentParser();p.add_argument('--output',default=str(ROOT/'data/visual_benchmark/mstructqa_24'))
     p.add_argument('--watch',action='store_true');p.add_argument('--retry-failed',action='store_true')
     p.add_argument('--ids');p.add_argument('--max-languages',type=int,default=13);a=p.parse_args()
     out=Path(a.output);api=API(out,load(ROOT),a.retry_failed);dest=out/'expansion_audit';dest.mkdir(exist_ok=True)

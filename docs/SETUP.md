@@ -21,7 +21,7 @@ python skills/multilingual-visual-benchmark/scripts/visual_harness.py run \
   --languages en,zh,ar --output data/demo
 ```
 
-Add `--font /absolute/path/to/covering-font.ttf` when needed. This uses checked-in synthetic data/translations, performs no API calls and writes a content-addressed run plus `latest.json`. Open that run's `index.html` manually.
+Add `--font /absolute/path/to/covering-font.ttf` when needed. This uses checked-in synthetic data/translations, performs no API calls and writes a content-addressed run plus `latest.json`. Inspect the generated PNGs and JSONL records directly.
 
 ## Full construction
 
@@ -55,7 +55,7 @@ Malformed/incomplete JSON and schema/content violations are not transport failur
 | `validation_release/val.needs_review.jsonl` | Excluded/uncertain candidates |
 | `api/`, `expansion_audit/` | Local generation/review provenance and failures |
 | `status.json`, `completion.json` | Actual progress; final completion marker only after finalization |
-| `reproducible_code.zip`, `index.html` | Final code package and local gallery |
+| `reproducible_code.zip` | Final code package |
 
 An image existing on disk is not evidence of semantic quality. No human verification is implied by automated admission. Exact reproduction uses stored specification/label/code/font snapshots rather than new model calls.
 

@@ -24,6 +24,9 @@ For tables chart_types must be []; merged-cell type is computed separately from 
 
 def table_features(spec):
     if spec['kind']!='table': return None
+    if spec.get('render_mode') == 'custom' and 'rows' not in spec['data']:
+        return {'type':'mixed_visual', 'classification_basis':'custom reconstruction of table and accompanying diagram; no inferred rectangular grid',
+                'components':spec['data'].get('components',[])}
     rows=spec['data']['rows']
     cells=[c for row in rows for c in row if c.get('label_key')!='table_title' and not str(c.get('label_key','')).startswith(('table_note','footnote_'))]
     rs=sum(int(c.get('rowspan',1))>1 for c in cells); cs=sum(int(c.get('colspan',1))>1 for c in cells)

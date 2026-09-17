@@ -1,0 +1,77 @@
+\documentclass[11pt]{article}
+\usepackage[final]{acl}
+\usepackage{times}
+\usepackage{latexsym}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{microtype}
+\usepackage{booktabs,multirow}
+\usepackage{amsmath}
+\begin{document}
+% Preview on an ordinary two-column page; no title block or spacing overrides.
+% For this one-page layout proof only, place the unchanged table contents
+% at the top of a two-column page. The manuscript fragment remains table*.
+\makeatletter
+\newcommand{\PreviewTableBlock}{\begin{minipage}{\textwidth}
+\renewenvironment{table*}[1][]{\def\@captype{table}}{}
+\input{paper/tables/main_results}
+\end{minipage}}
+\makeatother
+\twocolumn[\PreviewTableBlock]
+\section{Main evaluation protocol}
+This page reports measured GPT-6 Astra results on the current MStructQA
+candidate cohort: 8,960 question--image configurations, with 8,958 returned
+answers and two connection failures counted as incorrect. The candidate
+cohort has not yet been fully verified by human review.
+The two header groups separate cross-language transfer from language-aligned
+question answering. The frozen reference snapshot contains the same source
+examples across all configurations. Exact numeric or normalized text matches
+are accepted directly. Remaining answers are assessed by GPT-6 Astra using
+only the question, reference answer and model response. The Judge returns
+a binary equivalence decision; unconfirmed equivalence counts as incorrect.
+This yields 7,210 correct answers. The Judge uses the same model as inference,
+so these scores represent automated adjudication rather than human validation.
+
+\subsection{Cross-language QA}
+Let $S$ be the set of 24 languages, and let $a_{v,q}$ be accuracy, in percent,
+with visual language $v$ and question/answer language $q$.
+The cross-language aggregates exclude the corresponding same-language pair:
+\begin{align*}
+\mathrm{XQA}_{\mathrm{ZH}}&=\frac{1}{23}\sum_{v\in S\setminus\{\mathrm{zh}\}}a_{v,\mathrm{zh}},\\
+\mathrm{XQA}_{\mathrm{EN}}&=\frac{1}{23}\sum_{v\in S\setminus\{\mathrm{en}\}}a_{v,\mathrm{en}}.
+\end{align*}
+The excluded Chinese--Chinese and English--English configurations appear
+in LQA. Thus every configuration contributes exactly once to the overall
+average.
+
+\subsection{Language-aligned QA}
+For each language $\ell\in S$, report $\mathrm{LQA}_{\ell}=a_{\ell,\ell}$.
+The question and answer use the same language as the image. The two-letter
+headers are language identifiers; they do not indicate countries or regions.
+Plain numeric reference answers follow the dataset's existing rule for
+omitting the appended response-language instruction.
+
+\subsection{Overall accuracy}
+The last column averages the 70 distinct configurations:
+\begin{equation*}
+\begin{aligned}
+\mathrm{AVG}={}&\frac{1}{70}\Bigl(23\mathrm{XQA}_{\mathrm{ZH}}+23\mathrm{XQA}_{\mathrm{EN}}\\
+&\qquad+\sum_{\ell\in S}\mathrm{LQA}_{\ell}\Bigr).
+\end{aligned}
+\end{equation*}
+A direct mean of the 26 displayed metric columns would give each
+cross-language configuration less weight and is not the proposed AVG.
+If some configurations lack eligible examples, report their coverage and
+leave the full-protocol AVG unavailable rather than substituting zeros or
+silently changing the denominator. Chart-only and table-only results can
+use this same header in subsequent tables or separate row blocks.
+
+\section{Preview notes}
+The table spans the two-column text width through the standard
+\texttt{table*} environment. This preview uses the current general ACL style
+file; it is not a claim about a separate ACL 2027 style release.
+The title, section, caption, body and float spacing are not customized.
+The only spacing adjustment is local horizontal cell padding inside the
+table. Scores are percentages rounded to one decimal place; aggregates are
+computed from unrounded configuration scores.
+\end{document}

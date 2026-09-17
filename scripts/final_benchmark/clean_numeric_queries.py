@@ -45,16 +45,10 @@ def clean(out):
         target = backup / path.relative_to(out)
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(path, target)
-    if (out / 'index.html').exists():
-        shutil.copy2(out / 'index.html', backup / 'index.html')
     for path, rows in updates:
         temp = path.with_suffix('.tmp')
         temp.write_text(''.join(json.dumps(r, ensure_ascii=False)+'\n' for r in rows), encoding='utf-8')
         temp.replace(path)
-    rows = [json.loads(line) for line in (out/'benchmark.jsonl').read_text().splitlines()]
-    export.gallery(out, read(out/'case_manifest.json'), rows, read(out/'validation.json'))
-    page = out / 'index.html'
-    page.write_text(page.read_text().replace('跨 11 种', '跨 24 种').replace('11 种同语', '24 种同语').replace('31个', '70个').replace('/1408', '/3072').replace('/3968', '/8960'))
     report = {'rule': 'plain ASCII numeric answers omit the exact generated language suffix',
               'changed': counts, 'backup': str(backup.relative_to(out)),
               'source_qa_answers_images_and_audits_unchanged': True}

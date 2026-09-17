@@ -2,6 +2,7 @@
 import argparse
 import copy
 import json
+from pathlib import Path
 
 from .api import digest, read, save, now
 from .pipeline import Builder, DEFAULT_OUT, ROOT
@@ -9,13 +10,16 @@ from .prompts import CHART
 
 
 def main():
-    args=argparse.Namespace(output=str(DEFAULT_OUT),retry_failed=True)
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--pilot',type=Path,required=True,help='Explicit preserved pilot input directory')
+    parser.add_argument('--output',default=str(DEFAULT_OUT))
+    args=parser.parse_args();args.retry_failed=True
     b=Builder(args)
     identifier='e525de67b11a063bafc6'
     folder=b.folder(identifier)
     if (folder/'recovery_complete.json').exists():
         return
-    pilot=ROOT/'data/visual_benchmark/pilot_5x11_v1'
+    pilot=args.pilot
     old=read(pilot/'specs.json')[identifier]
     labels_all=read(pilot/'labels_en.json')
     keys={'learner_walltime','episode_return','unit_minutes','unit_hours','actors_title','series_single','series_2','series_8','series_16'}

@@ -17,7 +17,7 @@ from .api import now, read, save
 
 def main():
     p = argparse.ArgumentParser()
-    p.add_argument('--output', default='data/visual_benchmark/final_128_v2')
+    p.add_argument('--output', default='data/visual_benchmark/baseline')
     p.add_argument('--source', default='data/processed/normal_qa_v4')
     p.add_argument('--stage-timeout', type=int, default=900)
     p.add_argument('--rounds', type=int, default=2)

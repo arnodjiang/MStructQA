@@ -15,7 +15,7 @@ Use `python scripts/run_pipeline.py --help` from the repository root for the pub
 | `expand24.py` | Complete all 24 language localizations using frozen specifications |
 | `worker.py`, `render_runtime.py` | Offline rendering and layout checks |
 | `review.py`, `val_audit.py`, `audit24.py` | Source fidelity and multilingual visual/QA review |
-| `export.py`, `finalize24.py` | Candidate/screened records, gallery and standalone code export |
+| `export.py`, `finalize24.py` | Candidate/screened records and standalone code export |
 | `val_verify.py`, `verify_export.py` | Embedded-data validation and representative pixel reproduction |
 | `score_val.py` | Preliminary strict matching and grouped uncertainty estimates |
 

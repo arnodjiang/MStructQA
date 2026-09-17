@@ -32,7 +32,7 @@ Generated chart adapters are executable Python: inspect their imports and side e
 
 ## Preserve and verify
 
-The harness retains source/render specs, dictionaries, SHA256 manifests, original-language code, each translated code file, PNGs, same-language QA JSONL and an HTML gallery in content-addressed run directories. Each code file embeds its numerical data and translated labels and can run without the original project or translation cache. Do not call reconstructed code the upstream author's original source. Keep previous runs when data, translations, code, or fonts change.
+The harness retains source/render specs, dictionaries, SHA256 manifests, original-language code, each translated code file, PNGs, same-language QA JSONL in content-addressed run directories. Each code file embeds its numerical data and translated labels and can run without the original project or translation cache. Do not call reconstructed code the upstream author's original source. Keep previous runs when data, translations, code, or fonts change.
 
 Before delivery:
 

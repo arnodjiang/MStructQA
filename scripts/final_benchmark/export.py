@@ -13,6 +13,7 @@ import shutil
 
 from .api import digest, now, read, save
 from .pipeline import ROOT, DEFAULT_OUT, LANGUAGES, FONT, bind, placeholder_keys
+from .provenance import source_binding, verify_spec, verify_locale, render_is_current, verify_legacy_render
 
 REPLY = {'en': 'Please answer in English.', 'zh': '请用中文回答。',
          'ja': '日本語で回答してください。', 'ko': '한국어로 답해주세요.',
@@ -105,6 +106,8 @@ def assemble(out, partial=False):
     sources = [json.loads(x) for x in (out/'source/candidates.jsonl').read_text().splitlines()]
     identities = {r['id']: r for r in map(json.loads, (out/'source/selected_reserve_identity.jsonl').read_text().splitlines())}
     records, images, cases, missing, localization = [], [], [], [], []
+    old_manifest = out/'image_manifest.json'
+    previous_images = {(r['id'],r['visual_language']):r for r in read(old_manifest)} if old_manifest.exists() else {}
     prelude = code_prelude()
     diversity = Counter()
     for source in sources:
@@ -115,7 +118,10 @@ def assemble(out, partial=False):
             continue
         identity = identities[identifier]
         spec, qa = read(folder/'render_spec.json'), read(folder/'qa.json')
+        binding = source_binding(folder, source, identity)
+        verify_spec(spec, binding)
         locales = {lang: read(folder/'locales'/(lang+'.json')) for lang in LANGUAGES}
+        for loc in locales.values():verify_locale(loc, spec, qa, binding)
         locale_checks = {lang: localization_issues(locales['en'], locales[lang]) for lang in LANGUAGES}
         localization.extend({'id': identifier, 'language': lang, 'issues': issues}
                             for lang, issues in locale_checks.items() if issues)
@@ -139,6 +145,14 @@ def assemble(out, partial=False):
         for language in LANGUAGES:
             image = folder/'images'/(language+'.png')
             layout = read(image.with_suffix('.layout.json'))
+            if 'render_binding' in layout and not render_is_current(image, spec, locales[language]['labels']):
+                raise ValueError('stale_render_inputs:' + identifier + ':' + language)
+            if 'render_binding' not in layout:
+                previous_code=folder/'code'/('original' if language=='en' else 'translated')/language/'render.py'
+                verify_legacy_render(previous_code,spec,language,locales[language]['labels'])
+                previous=previous_images.get((identifier,language),{})
+                if previous.get('image_sha256') != hashlib.sha256(image.read_bytes()).hexdigest():
+                    raise ValueError('legacy_image_changed: rerender before export:' + identifier + ':' + language)
             code = emit_code(folder, spec, language, locales[language], prelude)
             entry = {'id': identifier, 'base_id': identity['base_id'], 'visual_language': language,
                      'image': str(image.relative_to(out)), 'image_sha256': hashlib.sha256(image.read_bytes()).hexdigest(),
@@ -173,6 +187,12 @@ def assemble(out, partial=False):
                           'provenance': identity['provenance'], 'code': entry['code'],
                           'data_sha256': entry['data_sha256'],
                           'status': 'api_reviewed_candidate' if not qflags else 'needs_review', 'review_flags': qflags}
+                correction=qa.get('reference_correction')
+                if correction:
+                    if correction['case_id']!=identifier or correction['original_answer']!=source['answer']:
+                        raise ValueError('reference_correction_source_mismatch')
+                    record.update(source_answer=correction['corrected_answer'],upstream_source_answer=source['answer'],
+                                  reference_correction_id=correction['id'])
                 records.append(record)
     expected = len(cases) * (3*len(LANGUAGES)-2)
     if len(records) != expected or len({r['variant_id'] for r in records}) != expected:
@@ -206,24 +226,7 @@ def assemble(out, partial=False):
     save(out/'validation.json', summary)
     save(out/'diversity_report.json', {'frozen_original': read(out/'source/diversity_coverage.json'), 'constructed_coverage': dict(diversity),
                                       'selection_changes': [], 'task_labels_are_inferred_not_human_verified': True})
-    gallery(out, cases, records, summary)
     return summary
-
-
-def gallery(out, cases, records, summary):
-    payload = json.dumps({'cases': cases, 'records': [{k:r[k] for k in ('id','visual_language','query_language','question','answer','image','code','status')} for r in records],
-                          'languages': LANGUAGES, 'summary': summary}, ensure_ascii=False).replace('</', '<\\/')
-    document = '''<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>MVisQA 128 · Multilingual Benchmark</title><style>
-body{margin:0;background:#f0f3ee;color:#21362c;font:16px system-ui}header{background:#173d32;color:white;padding:30px 4vw}header p{max-width:1100px;line-height:1.6}a{color:#287857}header a{color:#c7ecd7}.controls{padding:18px 4vw;background:#fff;position:sticky;top:0;display:flex;gap:20px;flex-wrap:wrap}select{font:inherit;padding:6px}main{margin:25px 4vw}article{background:white;padding:22px;border-radius:12px;margin-bottom:20px}.qa{padding:18px;background:#edf5ed;white-space:pre-wrap;line-height:1.65}.grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}.grid img{width:100%;height:auto}code{overflow-wrap:anywhere;font-size:12px}.note{color:#916222;font-size:14px}details img{max-width:100%}@media(max-width:800px){.grid{grid-template-columns:1fr}}
-</style><header><h1>MVisQA · 128 条候选的多语言变体</h1><p id="stats"></p><p>英文/中文问题跨 11 种图像语言，以及 11 种同语问答；回答语言与问题语言一致。同一个原题共有31个去重配置。API 重建和复核仍可能出错，审核状态随每条样本保留。</p><a href="benchmark.jsonl">完整 JSONL</a> · <a href="validation.json">验证报告</a> · <a href="diversity_report.json">多样性报告</a> · <a href="README.md">复现说明</a></header><div class="controls"><label>图像语言 <select id="lang"></select></label><label>问题语言 <select id="query"><option value="same">跟随图像</option><option value="zh">中文</option><option value="en">English</option></select></label><label>来源 <select id="source"><option value="all">全部</option></select></label><label>案例 <select id="case"></select></label></div><main id="content"></main><script>const D=__DATA__;const $=s=>document.querySelector(s);const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-$('#stats').textContent=`已生成 ${D.summary.base_cases}/128 个原题 · ${D.summary.images}/1408 张图像 · ${D.summary.samples}/3968 条样本`;
-$('#lang').innerHTML=Object.entries(D.languages).map(([k,v])=>`<option value="${k}">${v} (${k})</option>`).join('');$('#lang').value='zh';$('#source').innerHTML+=[...new Set(D.cases.map(c=>c.source))].map(s=>`<option>${s}</option>`).join('');
-function choices(){const old=$('#case').value;$('#case').innerHTML=D.cases.filter(c=>$('#source').value==='all'||c.source===$('#source').value).map(c=>`<option value="${c.id}">${D.cases.indexOf(c)+1}. ${c.source} · ${c.id}</option>`).join('');if([...$('#case').options].some(x=>x.value===old))$('#case').value=old;draw()}
-function draw(){const c=D.cases.find(x=>x.id===$('#case').value);if(!c){$('#content').textContent='当前筛选没有完成的案例';return}const l=$('#lang').value,q=$('#query').value==='same'?l:$('#query').value;const r=D.records.find(x=>x.id===c.id&&x.visual_language===l&&x.query_language===q);$('#content').innerHTML=`<article><h2>${esc(c.source)} · ${esc(c.kind)}</h2><code>${c.base_id}</code><p>${esc(c.task_tags.join(' / '))}</p><div class="qa" dir="${q==='ar'?'rtl':'ltr'}">Q: ${esc(r.question)}\nA: ${esc(r.answer)}</div><p class="note">状态：${esc(r.status)} · ${esc(JSON.stringify(c.review))}</p><div class="grid"><div><h3>英文重绘基线</h3><a href="cases/${c.id}/images/en.png"><img src="cases/${c.id}/images/en.png"></a></div><div><h3>${esc(D.languages[l])}</h3><a href="${r.image}"><img src="${r.image}"></a></div></div><p><a href="${r.code}">当前语言 Python 代码</a> · <a href="cases/${c.id}/code/original/en/render.py">英文 Python 代码</a> · <a href="cases/${c.id}/spec.json">恢复规格</a> · <a href="cases/${c.id}/qa.json">答案规范化记录</a></p><details><summary>原始输入与来源</summary>${c.original&&/\\.(png|jpg|jpeg)$/.test(c.original)?`<img src="${c.original}">`:''}<pre>${esc(JSON.stringify(c.provenance,null,2))}</pre></details></article>`}
-$('#source').addEventListener('change',choices);['#lang','#query','#case'].forEach(x=>$(x).addEventListener('change',draw));choices();</script>'''.replace('__DATA__', payload)
-    if summary['missing_cases']:
-        document = document.replace('href="benchmark.jsonl">完整 JSONL', 'href="benchmark.partial.jsonl">已完成部分 JSONL')
-    (out/'index.html').write_text(document)
 
 
 if __name__ == '__main__':

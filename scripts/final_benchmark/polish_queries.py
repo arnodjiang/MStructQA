@@ -13,6 +13,7 @@ import re
 from .api import API, read, save, now, digest
 from .pipeline import ROOT, bind, placeholder_keys
 from .export import REPLY
+from .provenance import verify_polish
 from scripts.openai_config import load
 
 RULES = {
@@ -135,7 +136,7 @@ character U+65F6 to an hour-unit label ending in U+65F6. Preserve placeholders.
 def main():
     p=argparse.ArgumentParser()
     p.add_argument('--source', default='data/visual_benchmark/final_128_v3')
-    p.add_argument('--output', default='data/visual_benchmark/query_polish_v1')
+    p.add_argument('--output', default='data/provenance/query_polish')
     p.add_argument('--workers', type=int, default=4)
     p.add_argument('--batch-size', type=int, default=32)
     p.add_argument('--retry-failed', action='store_true')
@@ -157,8 +158,14 @@ def main():
             loc=read(f/'locales'/f'{l}.json');q=loc['question']
             inputs[(cid,l)]={'id':cid,'original_source_query':original,'current_query':q,
                 'protected_bindings':{k:loc['labels'][k] for k in placeholder_keys(q)}}
-    save(out/'source_lock.json',{'source':str(src),'benchmark_sha256':hashlib.sha256((src/'benchmark.jsonl').read_bytes()).hexdigest(),
-                               'input_digest':digest(list(inputs.values())),'languages':list(RULES),'created_at':now()})
+    source_lock={'source':str(src),'benchmark_sha256':hashlib.sha256((src/'benchmark.jsonl').read_bytes()).hexdigest(),
+                 'input_digest':digest(list(inputs.values())),'languages':list(RULES)}
+    lock_path=out/'source_lock.json'
+    if lock_path.exists():
+        previous=read(lock_path)
+        if any(previous.get(k)!=v for k,v in source_lock.items()):
+            raise ValueError('query_polish_source_changed: use a new output directory')
+    else:save(lock_path,dict(source_lock,created_at=now()))
 
     def batch(job):
         l,cids=job; payload={'language':l,'items':[inputs[c,l] for c in cids]}
@@ -212,6 +219,7 @@ def main():
     for old in source_rows:
         row=dict(old); cid,l=old['id'],old['query_language'];r=results[cid,l]
         loc=read(src/'cases'/cid/'locales'/f'{l}.json')
+        verify_polish(r,cid,l,inputs[cid,l]['original_source_query'],loc)
         q=bind(r['query'],loc['labels']);row['question_original']=old['question']
         row['question_without_instruction']=q;row['question']=with_reply(q,row['answer'],REPLY[old['answer_language']])
         row['query_edit_status']=r['status'];row['query_revision']=digest([old['variant_id'],q])
@@ -236,16 +244,6 @@ def main():
         'answers_and_image_hashes_unchanged':True,'source_admission_preserved':True,
         'review':'Separate answer-blind call to the same configured model; not human certification.',
         'note':'Uncertain, rejected or extensive edits retain original query. Existing source-quality exclusions remain excluded.'})
-    data=json.dumps(rewritten,ensure_ascii=False).replace('<','\\u003c')
-    page='''<!doctype html><meta charset="utf-8"><title>MVisQA query copy editing</title>
-<style>body{font:17px system-ui;margin:32px auto;max-width:1200px}select{padding:8px;margin:8px}pre{white-space:pre-wrap;padding:20px;background:#f4f6f8}img{max-width:100%;max-height:650px}section{display:grid;grid-template-columns:1fr 1fr;gap:20px}</style>
-<h1>MVisQA · Query copy editing</h1><p>Original and revised queries. Answers and images preserved. Source quality flags still apply.</p>
-<a href="benchmark.jsonl">All candidates</a> · <a href="val.jsonl">Screened subset</a> · <a href="validation.json">Editing report</a>
-<div><select id="case"></select><select id="lang"></select><select id="visual"></select></div><p id="status"></p>
-<section><div><h3>Original</h3><pre id="before"></pre></div><div><h3>Revised</h3><pre id="after"></pre></div></section><img id="img"><script>
-const R=DATA;const $=id=>document.getElementById(id);for(const c of [...new Set(R.map(r=>r.id))])$('case').add(new Option(c,c));for(const l of LANGS){$('lang').add(new Option(l,l));$('visual').add(new Option(l,l));}
-function draw(){let rows=R.filter(r=>r.id===$('case').value&&r.query_language===$('lang').value);let r=rows.find(r=>r.visual_language===$('visual').value)||rows[0];$('visual').value=r.visual_language;$('before').textContent=r.question_original;$('after').textContent=r.question;$('before').dir=$('after').dir=r.query_language==='ar'?'rtl':'ltr';$('status').textContent=r.source+' · '+r.query_edit_status+' · source status: '+r.status;$('img').src=r.image;}for(const id of ['case','lang','visual'])$(id).onchange=draw;$('lang').value='zh';draw();</script>'''
-    (out/'index.html').write_text(page.replace('const R=DATA;', 'const R='+data+';').replace('of LANGS)', 'of '+json.dumps(list(RULES))+')'))
     print(json.dumps(read(out/'validation.json')),flush=True)
 
 

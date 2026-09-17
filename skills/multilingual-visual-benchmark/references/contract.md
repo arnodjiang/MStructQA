@@ -58,6 +58,6 @@ A fixture file maps target language codes to this structure. Source language is 
 - `images/<language>.png` and label geometry reports.
 - `benchmark.jsonl`: same-language QA variants; cross-language combinations can be assembled from the same dictionaries without generating additional images.
 - `manifest.json`: artifact hashes, run ID, source ID and font hash.
-- `validation.json`, `index.html`: mechanical checks and gallery; all outputs remain candidates pending review.
+- `validation.json`: mechanical checks; all outputs remain candidates pending review.
 
 Re-run exported code with `python render.py --output image.png --font /path/to/font.ttf`. There is no API call or dependency on external JSON/project code. Python dependencies and font are still required. Existing completed runs are checked for tampering before reuse. API caches are request-addressed and retain sanitized raw responses; they are not a substitute for final code snapshots.

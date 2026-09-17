@@ -8,7 +8,7 @@ from .api import read,save,now
 
 
 def main():
-    p=argparse.ArgumentParser();p.add_argument('--input',default='data/visual_benchmark/final_128_v2')
+    p=argparse.ArgumentParser();p.add_argument('--input',default='data/visual_benchmark/baseline')
     p.add_argument('--output',default='data/visual_benchmark/final_128_v3');a=p.parse_args()
     src=Path(a.input).resolve();out=Path(a.output).resolve()
     if out.exists():raise ValueError('revision_output_already_exists')

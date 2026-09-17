@@ -84,8 +84,6 @@ def finalize(out):
     for name,subset in [('benchmark.jsonl',rows),('benchmark.api_reviewed.jsonl',[r for r in rows if r['status']=='api_reviewed_candidate'])]:
         (out/name).write_text(''.join(json.dumps(r,ensure_ascii=False)+'\n' for r in subset))
     summary=read(out/'validation.json');summary['status_counts']=dict(Counter(r['status'] for r in rows));save(out/'validation.json',summary)
-    export.gallery(out,read(out/'case_manifest.json'),rows,summary)
-    page=out/'index.html';page.write_text(page.read_text().replace('跨 11 种','跨 24 种').replace('11 种同语','24 种同语').replace('31个','70个').replace('/1408','/3072').replace('/3968','/8960'))
     fonts={pipeline.FONT}
     for p in (out/'cases').glob('*/images/*.layout.json'):fonts.update(read(p).get('fonts_used',[]))
     save(out/'font_manifest.json',{'redistributed':False,'fonts':[{'path':p,'sha256':hashlib.sha256(Path(p).read_bytes()).hexdigest()} for p in sorted(fonts)]})
@@ -108,7 +106,7 @@ def finalize(out):
 
 
 def main():
-    p=argparse.ArgumentParser();p.add_argument('--output',default=str(pipeline.ROOT/'data/visual_benchmark/final_128_24lang_v1'));p.add_argument('--watch',action='store_true');a=p.parse_args();out=Path(a.output)
+    p=argparse.ArgumentParser();p.add_argument('--output',default=str(pipeline.ROOT/'data/visual_benchmark/mstructqa_24'));p.add_argument('--watch',action='store_true');a=p.parse_args();out=Path(a.output)
     def ready():
         if not (out/'validation.json').exists() or not (out/'benchmark.jsonl').exists():return False
         report=read(out/'validation.json')

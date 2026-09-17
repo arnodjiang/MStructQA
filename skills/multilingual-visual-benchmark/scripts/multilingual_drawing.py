@@ -16,6 +16,12 @@ MISSING_GLYPHS=[]
 USED_FONTS=set()
 FALLBACK_FONTS=[p for p in os.environ.get('MVISQA_FALLBACK_FONTS',
     '/System/Library/Fonts/KohinoorBangla.ttc:/System/Library/Fonts/GeezaPro.ttc:/System/Library/Fonts/KohinoorTelugu.ttc').split(os.pathsep) if os.path.isfile(p)]
+# Arial Unicode has Bengali/Telugu code points but lacks their GSUB/GPOS
+# shaping scripts. Cmap coverage alone must not select it for these syllables.
+SCRIPT_FONTS={script:path for script,path in {
+    'TELUGU':os.environ.get('MVISQA_TELUGU_FONT','/System/Library/Fonts/KohinoorTelugu.ttc'),
+    'BENGALI':os.environ.get('MVISQA_BENGALI_FONT','/System/Library/Fonts/KohinoorBangla.ttc')
+}.items() if os.path.isfile(path)}
 
 
 @lru_cache(maxsize=32)
@@ -30,8 +36,10 @@ def supports(path,text):
 
 
 def font_runs(text,direction):
-    # Keep the original font and shaping byte-for-byte when it covers a whole run.
-    if supports(FONT,text):return [(text,FONT)]
+    # A dedicated shaping font takes precedence for scripts unsupported by the
+    # default font's layout tables, even when all code points are present.
+    preferred=any(unicodedata.name(c,'').startswith(s) for c in text for s in SCRIPT_FONTS)
+    if supports(FONT,text) and not preferred:return [(text,FONT)]
     groups=[]
     for char in text:
         name=unicodedata.name(char,'')
@@ -40,8 +48,9 @@ def font_runs(text,direction):
         if groups and groups[-1][0]==script:groups[-1][1]+=char
         else:groups.append([script,char])
     result=[]
-    for _,part in groups:
-        path=next((p for p in [FONT]+FALLBACK_FONTS if supports(p,part)),FONT)
+    for script,part in groups:
+        candidates=([SCRIPT_FONTS[script]] if script in SCRIPT_FONTS else [])+[FONT]+FALLBACK_FONTS
+        path=next((p for p in candidates if supports(p,part)),FONT)
         result.append((part,path))
     return result[::-1] if direction=='rtl' else result
 

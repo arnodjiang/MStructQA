@@ -33,7 +33,7 @@ def main():
         if old['kind']=='table':
             result,key=b.api.call('quality_source_table_v1',cid,prompts.TABLE,
                                   {'input':'Transcribe the original image faithfully. HTML/markdown may disagree with the raster; recover actual visible row and column spans and all numeric strings.'},image=b.image(cid),max_tokens=24000)
-            spec=table_spec(result)
+            spec=table_spec(result,require_visual_inventory=True)
             extraction=result
         else:
             result,key=b.api.call('quality_source_chart_v1',cid,prompts.CHART,

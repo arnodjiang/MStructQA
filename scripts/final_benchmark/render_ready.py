@@ -35,7 +35,7 @@ def main():
         jobs=[]
         for case in builder.cases:
             folder=builder.folder(case['id'])
-            if (folder/'render_complete.json').exists():continue
+            if builder.render_current(case):continue
             if attempts.get(case['id'],0)>=2:continue
             if all((folder/'locales'/(lang+'.json')).exists() for lang in LANGUAGES):jobs.append(case)
         if jobs:
@@ -44,7 +44,7 @@ def main():
             summary=assemble(builder.out,partial=True)
             shutil.copy2(Path(__file__).with_name('README.md'),builder.out/'README.md')
             print('Exported %d samples from %d complete cases.'%(summary['samples'],summary['base_cases']),flush=True)
-        if not args.watch or len(list((builder.out/'cases').glob('*/render_complete.json')))==128:break
+        if not args.watch or all(builder.render_current(c) for c in builder.cases):break
         import time
         time.sleep(20)
 

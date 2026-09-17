@@ -37,7 +37,7 @@ v['answer_checks']['e525de67b11a063bafc6']['official_acceptance']='pending; pilo
 (OUT/'validation.json').write_text(json.dumps(v,ensure_ascii=False,indent=2))
 (OUT/'README.md').write_text('''# 多语言图像构造试验（5 × 11）
 
-打开 index.html 对比英文重绘与目标语言图像，切换同语、中文或英文 QA，展开原始输入查看源图。
+图像、QA 和溯源信息分别保存在下列文件中。
 
 - images/：55 张 PNG；英语重绘基线 + 中文、日语、韩语、法语、德语、西班牙语、葡萄牙语、俄语、阿拉伯语、印地语。
 - specs.json：三张图的 Python 绘图数据、像素校准与两张表的原始单元格。图形数值不随语言改变。
@@ -55,7 +55,6 @@ v['answer_checks']['e525de67b11a063bafc6']['official_acceptance']='pending; pilo
 ```sh
 .venv/bin/python scripts/render_visual_benchmark.py
 .venv/bin/python scripts/finalize_visual_pilot.py
-.venv/bin/python scripts/render_visual_preview.py
 ```
 
 已有翻译缓存，以上命令不调用 API。首次恢复与翻译分别由 recover_visual_specs.py 和 localize_visual_specs.py 完成。当前恢复器为这三张图的具体校准实现，不是任意图像通用逆向工具。新图需新增校准规格并审核。

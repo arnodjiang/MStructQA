@@ -64,18 +64,28 @@ class API:
     def _call_once(self, stage, case_id, prompt, payload, image=None, max_tokens=18000, retry_index=0):
         effective_max_tokens = int(max_tokens) * 3
         image_paths = [Path(p) for p in image] if isinstance(image, (list, tuple)) else ([Path(image)] if image else [])
+        # Hash exactly the bytes sent, even if another worker replaces a file later.
+        image_bytes = [p.read_bytes() for p in image_paths]
+        binding = payload.get('source_binding') if isinstance(payload, dict) else None
+        if binding:
+            if binding['case_id'] != case_id:raise ValueError('api_source_case_mismatch')
+            if image_bytes and (len(image_bytes) != 1 or hashlib.sha256(image_bytes[0]).hexdigest() != binding['original_image_sha256']):
+                raise ValueError('api_source_image_mismatch')
         request = {'stage': stage, 'case_id': case_id, 'system': prompt, 'payload': payload,
                    'model': self.config['OPENAI_MODEL'], 'max_output_tokens': effective_max_tokens,
                    'endpoint_sha256': digest(self.config.get('OPENAI_BASE_URL')),
                    'image_path': str(image_paths[0]) if len(image_paths) == 1 else None,
-                   'image_sha256': hashlib.sha256(image_paths[0].read_bytes()).hexdigest() if len(image_paths) == 1 else None}
+                   'image_sha256': hashlib.sha256(image_bytes[0]).hexdigest() if len(image_paths) == 1 else None}
         if len(image_paths) > 1:
-            request['images'] = [{'path': str(p), 'sha256': hashlib.sha256(p.read_bytes()).hexdigest()} for p in image_paths]
+            request['images'] = [{'path': str(p), 'sha256': hashlib.sha256(blob).hexdigest()} for p,blob in zip(image_paths,image_bytes)]
         key = digest(request)
         folder = self.root / 'api' / stage / case_id / key
         complete = folder / 'result.json'
         if complete.exists():
-            return read(complete)['parsed'], key
+            cached = read(complete)
+            if cached.get('request_sha256') != key or read(folder/'request.json') != request:
+                raise ValueError('cached_request_binding_mismatch:' + key)
+            return cached['parsed'], key
         folder.mkdir(parents=True, exist_ok=True)
         save(folder / 'request.json', request)
         attempts = sorted(folder.glob('attempt_*.json'))
@@ -101,9 +111,9 @@ class API:
                 time.sleep(gap)
             self.last_start = time.monotonic()
         image_uris = []
-        for image_path in image_paths:
+        for image_path, blob in zip(image_paths, image_bytes):
             mime = 'image/png' if image_path.suffix.lower() == '.png' else 'image/jpeg'
-            uri = 'data:' + mime + ';base64,' + base64.b64encode(image_path.read_bytes()).decode()
+            uri = 'data:' + mime + ';base64,' + base64.b64encode(blob).decode()
             image_uris.append(uri)
         begin = time.monotonic()
         try:

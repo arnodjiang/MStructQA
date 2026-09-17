@@ -19,3 +19,19 @@ __pycache__/
 dist/
 build/
 *.egg-info/
+
+# Atomic LaTeX row publication lock.
+paper/tables/*.lock
+
+# Local reports, builds, logs and publication staging.
+output/
+tmp/
+logs/
+*.aux
+*.out
+*.synctex.gz
+# Historical local planning notes; current public design is under docs/.
+/BENCHMARK_DESIGN.md
+/DOWNLOAD_QA_COUNTS.md
+/EXPANSION_GUIDE.md
+/LANGUAGE_EXPANSION_24.md

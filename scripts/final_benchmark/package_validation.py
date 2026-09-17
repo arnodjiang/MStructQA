@@ -10,7 +10,7 @@ from .api import now, read, save
 
 def main():
     p=argparse.ArgumentParser()
-    p.add_argument('--input',default='data/visual_benchmark/final_128_v2')
+    p.add_argument('--input',default='data/visual_benchmark/baseline')
     p.add_argument('--output',required=True)
     a=p.parse_args()
     src=Path(a.input).resolve();dest=Path(a.output).resolve()

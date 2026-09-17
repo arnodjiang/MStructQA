@@ -2,7 +2,7 @@
 
 **A Multilingual Benchmark for Chart and Visual Tabular Question Answering in MLLMs**
 
-[Getting Started](#getting-started) · [Benchmark](#benchmark) · [Pipeline](#construction-pipeline) · [Data Review](#inspect-and-review-data) · [Prompts](prompts/README.md) · [Documentation](#documentation)
+[Getting Started](#getting-started) · [Benchmark](#benchmark) · [Pipeline](#construction-pipeline) · [Dataset](https://huggingface.co/datasets/arnodjiang/MStructBench) · [New-server evaluation](docs/SERVER_MIGRATION.md) · [Prompts](prompts/README.md) · [Documentation](#documentation)
 
 MStructQA provides a **24-language** benchmark construction framework for evaluating how multimodal large language models understand charts and visual tables. It pairs localized visuals with questions and reference answers while preserving the underlying numerical data, table structure and question intent.
 
@@ -89,6 +89,19 @@ cp .env.example .env
 
 Set `OPENAI_API_KEY`, `OPENAI_BASE_URL` and `OPENAI_MODEL` in your local `.env`. The provider must support an OpenAI-compatible **Responses API**, image input and sufficient context/output length. `.env`, generated data and API logs are excluded from Git.
 
+Optional `JUDGE_MODEL`, `JUDGE_BASE_URL` and `JUDGE_API_KEY` configure answer judging
+independently; blank values inherit `OPENAI_*`. The active local benchmark path is
+recorded in `configs/benchmark_release.json`; retired revisions are rejected by
+the inference runners.
+
+### Evaluate an existing release
+
+```bash
+python -m scripts.distribution.download
+```
+
+See [server setup and new-model evaluation](docs/SERVER_MIGRATION.md) for background commands, provider configuration, progress files and scoring. No previous evaluation checkpoint is required.
+
 ### Run the pipeline
 
 ```bash
@@ -114,7 +127,7 @@ python skills/multilingual-visual-benchmark/scripts/visual_harness.py run \
   --languages en,zh,ar --output data/demo
 ```
 
-This uses synthetic data and checked-in translations. Add `--font /absolute/path/to/font.ttf` when needed. The generated run includes a local HTML gallery.
+This uses synthetic data and checked-in translations. Add `--font /absolute/path/to/font.ttf` when needed.
 
 ## Outputs and quality
 
@@ -126,32 +139,21 @@ This uses synthetic data and checked-in translations. Add `--font /absolute/path
 | `cases/<id>/images/` | Localized images and layout reports |
 | `cases/<id>/code/` | Standalone rendering code with embedded data and labels |
 | `reproducible_code.zip` | Packaged renderers and reproduction metadata |
-| `index.html` | Local visual inspection gallery |
 
-The repository distributes code, prompts and synthetic examples; source and generated benchmark data are obtained through the pipeline. Actual run statistics and completion are recorded in the output manifests.
+The current dataset is distributed on [Hugging Face](https://huggingface.co/datasets/arnodjiang/MStructBench) as image-bearing Parquet and an exact evaluation archive. This GitHub repository provides the code, prompts and synthetic examples. Follow [new-server evaluation](docs/SERVER_MIGRATION.md) to download the frozen data and evaluate another model without regenerating images or translations.
 
 Source fidelity and localization quality are assessed separately. A successful translation does not override a failed source audit. Automated reviewers can use the same model as generation and do not constitute human certification. Exact reproduction requires the saved specifications, labels, code and fonts; new model calls can produce different results.
 
-## Inspect and review data
-
-Launch the local inspection interface after finalization:
-
-```bash
-python scripts/review_dataset.py --dataset data/visual_benchmark/mstructqa_24 --port 8765
-```
-
-Open **http://127.0.0.1:8765**. The server uses only Python's standard library, binds to the loopback interface and does not make API calls.
-
-- Inspect expected versus observed language/configuration coverage, missing artifacts, duplicate IDs and image SHA-256 checks.
-- Filter cases by source/ID, completeness issues, automated review flags or unfinished human review.
-- Compare upstream and localized images, source and translated QA, protected label dictionaries and automated review evidence.
-- Save a verdict and notes for each QA configuration; export annotations as JSON. Reviews carry a record fingerprint, so changed records invalidate previous conclusions.
-
-Human annotations are stored separately in `<dataset>/manual_review/annotations.json`, which is excluded from Git under the default data directory. They do **not** overwrite benchmark records or automatically admit examples into the screened split. The interface distinguishes file/metadata consistency from semantic correctness; image reconstruction and reference-answer validity still require human adjudication. See [the review guide](docs/DATA_REVIEW.md) for the workflow and limitations.
-
 ## Evaluation and reporting
 
-This is a benchmark construction and inspection repository, not a model checkpoint distribution. For evaluation, generate model predictions against a frozen, reviewed export, keep all language variants of each source in the same split, and report results by language, setting and visual type. Report the evaluated denominator and exclusions alongside scores.
+Original source identities and unmodified model inputs/outputs are retained in
+content-addressed snapshots for paired original-versus-enhanced ablations. See
+[source and evaluation provenance](docs/ABLATION_PROVENANCE.md) for identifiers,
+preserved artifacts, and the comparison protocol.
+
+This is a benchmark construction and evaluation repository, not a model checkpoint distribution. For evaluation, generate model predictions against a frozen, reviewed export, keep all language variants of each source in the same split, and report results by language, setting and visual type. Report the evaluated denominator and exclusions alongside scores.
+
+The full inference runner sends each current question and localized image to the configured API, saves structured answers and per-attempt token usage, and automatically computes XQA, LQA and AVG when all QA finish. See [evaluation execution and accounting](scripts/evaluation/README.md). Final semantic ACC first applies deterministic matching, then uses a separately configured text-only LLM judge for non-matches. Set `JUDGE_MODEL=gpt-6-astra` to reproduce the current judging setup. Judge inputs contain no images; uncertain decisions count as incorrect.
 
 The preliminary strict-matching scorer is documented in [the evaluation design](docs/DESIGN.md); inspect its arguments with `python -m scripts.final_benchmark.score_val --help`. Numeric tolerances, alternative-answer handling and model-based judges must be explicitly specified and validated for the chosen experiment. The repository does not claim published model rankings or human-validated coverage from automated checks alone.
 

@@ -4,7 +4,6 @@ import argparse
 import copy
 import csv
 import hashlib
-import html
 from html.parser import HTMLParser
 import json
 import os
@@ -171,6 +170,8 @@ def run(args):
     if (dest/'manifest.json').exists():
         prior=read(dest/'manifest.json')
         for item in prior['files']:
+            if item['path'] == 'index.html':
+                continue  # Retired inspection UI; old manifests retain its historical hash.
             if hashlib.sha256((dest/item['path']).read_bytes()).hexdigest()!=item['sha256']:raise ValueError('Archived artifact modified')
         print(dest);return
     dest.mkdir(parents=True,exist_ok=True);save(dest/'source_spec.json',original);save(dest/'render_spec.json',spec);save(dest/'locales.json',locales)
@@ -187,11 +188,6 @@ def run(args):
     (dest/'benchmark.jsonl').write_text(''.join(json.dumps(r,ensure_ascii=False)+'\n' for r in records))
     validation={'images':len(languages),'qas':len(records),'all_languages_share_data':len({x['data_sha256'] for x in checks})==1,'layout_checks':'passed','semantic_review':'pending','reconstruction_review':spec.get('recovery',{}),'variants':checks}
     save(dest/'validation.json',validation)
-    gallery=['<!doctype html><meta charset="utf-8"><title>Multilingual visuals</title><style>body{font:16px system-ui;margin:30px;background:#f1f4f0}img{max-width:100%;background:white}section{padding:24px;background:white;margin:20px 0}pre{white-space:pre-wrap}</style><h1>Multilingual visual benchmark candidates</h1><p>Review reconstruction and translations before benchmark admission.</p>']
-    for check in checks:
-        language=check['language'];qa='\n'.join('Q: '+r['question']+'\nA: '+r['answer'] for r in records if r['visual_language']==language)
-        gallery.append(f'<section><h2>{html.escape(language)}</h2><a href="{check["code"]}">Python code</a><pre dir="'+('rtl' if language=='ar' else 'ltr')+'">'+html.escape(qa)+f'</pre><img src="{check["image"]}" alt="{language}"></section>')
-    (dest/'index.html').write_text(''.join(gallery))
     files=[{'path':str(p.relative_to(dest)),'sha256':hashlib.sha256(p.read_bytes()).hexdigest()} for p in sorted(dest.rglob('*')) if p.is_file() and '.matplotlib_cache' not in p.parts and p.name!='manifest.json']
     save(dest/'manifest.json',{'schema_version':1,'run_id':runid,'base_id':spec['base_id'],'font_sha256':font_hash,'source_sha256':digest(original),'files':files})
     save(output/'latest.json',{'run_id':runid,'directory':str(dest.resolve())})

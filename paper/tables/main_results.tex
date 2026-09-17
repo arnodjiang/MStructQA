@@ -1,0 +1,54 @@
+% Requires: \usepackage{booktabs,multirow}
+% Insert with \input{paper/tables/main_results} in an ACL document.
+% Only table-internal horizontal spacing is adjusted locally.
+% No title, caption, section, float or document spacing is changed.
+\begin{table*}[t]
+  \centering
+  \begingroup
+  \scriptsize
+  \setlength{\tabcolsep}{0pt}
+  \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}c*{27}{c}@{}}
+    \toprule
+    \multirow{2}{*}{\textbf{Model}}
+      & \multicolumn{2}{c}{\textbf{XQA}}
+      & \multicolumn{24}{c}{\textbf{LQA}}
+      & \multirow{2}{*}{\textbf{AVG}} \\
+    \cmidrule(lr){2-3}\cmidrule(lr){4-27}
+      & ZH & EN
+      & EN & ZH & JA & KO & FR & DE & ES & PT
+      & RU & AR & HI & IT & NL & PL & TR & VI
+      & ID & TH & SW & FA & UR & BN & TA & TE
+      & \\
+    \midrule
+    \shortstack[l]{GPT-6-Astra}
+      & 80.3 & 82.5
+      & 86.7 & 85.2 & 83.6 & 84.4
+      & 82.8 & 84.4 & 82.8 & 82.0
+      & 84.4 & 82.0 & 79.7 & 84.4
+      & 84.4 & 83.6 & 82.0 & 83.6
+      & 82.0 & 81.2 & 85.2 & 82.8
+      & 79.7 & 82.0 & 81.2 & 77.3
+      & 81.9 \\
+    \shortstack[l]{GPT-5.6-Sol}
+      & 77.5 & 78.7
+      & 81.2 & 79.7 & 81.2 & 78.1
+      & 81.2 & 80.5 & 80.5 & 78.1
+      & 78.9 & 78.1 & 80.5 & 78.1
+      & 80.5 & 80.5 & 79.7 & 78.9
+      & 78.9 & 77.3 & 78.9 & 78.1
+      & 77.3 & 78.1 & 74.2 & 70.3
+      & 78.3 \\
+    \bottomrule
+  \end{tabular*}
+  \endgroup
+  \caption{Accuracy (\%, $\uparrow$) on MStructQA.
+  \textbf{XQA} (cross-language QA): ZH/EN denotes the question and answer
+  language, macro-averaged over the other 23 visual languages.
+  \textbf{LQA} (language-aligned QA): each column uses the indicated language
+  for the visual, question, and answer.
+  \textbf{AVG} is the macro-average over all 70 distinct configurations.
+  Exact matches are accepted directly; remaining answers are judged for
+  equivalence by GPT-6 Astra using text only.
+  Unconfirmed equivalence and failed requests count as incorrect.}
+  \label{tab:mstructqa-main}
+\end{table*}
