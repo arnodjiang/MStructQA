@@ -1,7 +1,7 @@
 # Fine-grained visual types
 
-The current `visual_kind` field is a single English category assigned by GPT-6
-Astra from the released English image of each base case. Its label is shared by
+The current `visual_kind` field is a single English category assigned through automated
+visual classification of the released English image of each base case. Its label is shared by
 the 24 localized visuals and 70 QA configurations of that case, which preserve
 the chart/table structure. Questions and reference answers are never sent to the
 classifier. The labels describe reconstructed evaluation images, not necessarily

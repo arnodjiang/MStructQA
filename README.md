@@ -146,7 +146,7 @@ Source fidelity and localization quality are assessed separately. A successful t
 
 ## Visual categories
 
-The dataset’s `visual_kind` provides fine-grained GPT-6 image classifications,
+The dataset’s `visual_kind` describes the primary visual category,
 including chart subtypes and four table merge structures. `visual_family` retains
 the coarse chart/table cohorts. See [visual taxonomy](docs/VISUAL_TAXONOMY.md) for
 definitions, classification prompts and reproducibility.

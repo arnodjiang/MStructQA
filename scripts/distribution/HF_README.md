@@ -106,7 +106,7 @@ LQA/XQA columns. All language variants of a source question share a base ID.
 | `configuration` | Original setting identifier; language fields define LQA/XQA membership |
 | `source_context` | Translated external document prose; empty if absent |
 | `source` | Upstream dataset |
-| `visual_kind` | Fine-grained GPT-6 visual category, such as Grouped Bar Chart or Column-Spanning Table |
+| `visual_kind` | Visual category describing the primary chart type or table structure, such as Grouped Bar Chart or Column-Spanning Table |
 | `visual_family` | Legacy coarse chart/table grouping for compatible evaluation cohorts |
 | `image_sha256` | Checksum of the exact image bytes |
 | `metadata_json` | Lossless canonical reference row, including provenance and automated audit flags |
@@ -119,8 +119,8 @@ are not transcribed into the prompt. For exact prompt serialization, use
 
 ## Visual categories
 
-`visual_kind` is classified by GPT-6 Astra from one current English image per base
-case and shared across its localized variants. It describes the visible chart
+`visual_kind` is assigned through automated visual classification of one current
+English image per base case and shared across its localized variants. It describes the visible chart
 type or table merge structure; questions and answers are not classifier inputs.
 Tables use **Simple Table**, **Row-Spanning Table**, **Column-Spanning Table** or
 **Mixed-Spanning Table**. Simple means no merged rows/columns, not a one-cell table.
@@ -155,7 +155,7 @@ revision, row and file identifiers are retained for attribution and tracing.
 
 First apply deterministic answer matching. Non-matching predictions are judged
 for answer equivalence by a separately configured, text-only LLM judge.
-The project experiments use GPT-6 Astra as judge. Only `equivalent` receives
+Only `equivalent` receives
 credit; `different` and uncertain outcomes are incorrect. Failed/missing
 predictions count as incorrect in the fixed denominator. Record the inference
 and judge models, prompts, token usage, request counts and release revision.
